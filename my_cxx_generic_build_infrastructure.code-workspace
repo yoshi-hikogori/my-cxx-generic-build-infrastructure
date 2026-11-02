@@ -73,7 +73,7 @@
 		],
 		"cmake.allowCommentsInPresetsFile": false,
 		"cmake.allowUnsupportedPresetsVersions": true,
-		"cmake.autoSelectActiveFolder": false,
+		"cmake.autoSelectActiveFolder": true,
 		"cmake.cmakeCommunicationMode": "fileApi",
 		"cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
 		"cmake.debugConfig": {
@@ -118,7 +118,6 @@
 		"cmake.sourceDirectory": [
 			"${workspaceFolder}"
 		],
-		"cmake.defaultActiveFolder": "${workspaceFolder}",
 		"cmake.enabledOutputParsers": [
 			"cmake"
 		],
