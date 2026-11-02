@@ -14,7 +14,6 @@ option(MY_IMPORT_STD_ENABLE_PCH "Enable precompiled headers" ON)
 option(MY_IMPORT_STD_BUILD_EXAMPLES "Build example projects" OFF)
 option(MY_IMPORT_STD_ENABLE_AVX2 "Require AVX2 support on the target CPU" OFF)
 option(MY_IMPORT_STD_USE_STATIC_RUNTIME "Use the statically linked MSVC runtime" OFF)
-option(MY_IMPORT_STD_ENABLE_PACKAGING "Enable CPack packaging targets" OFF)
 option(MY_IMPORT_STD_ENABLE_INSTRUMENTATION "Collect local build timing, output and Clang traces" OFF)
 set(MY_IMPORT_STD_TARGET_ARCH "" CACHE STRING "Required target architecture: x86_64 or aarch64; empty delegates to the toolchain")
 set_property(CACHE MY_IMPORT_STD_TARGET_ARCH PROPERTY STRINGS "" x86_64 aarch64)
@@ -30,12 +29,6 @@ if(MY_IMPORT_STD_ENABLE_INSTRUMENTATION)
 	)
 endif()
 
-cmake_generic_build_infrastructure_set_output_directories(
-	ARCHIVE "${PROJECT_BINARY_DIR}/$<CONFIG>/lib"
-	LIBRARY "${PROJECT_BINARY_DIR}/$<CONFIG>/lib"
-	RUNTIME "${PROJECT_BINARY_DIR}/$<CONFIG>/bin"
-)
-
 if(MY_IMPORT_STD_USE_STATIC_RUNTIME)
 	cmake_generic_build_infrastructure_use_static_msvc_runtime()
 endif()
@@ -50,27 +43,16 @@ target_sources(my_import_std_modules
 )
 target_compile_features(my_import_std_modules PUBLIC cxx_std_23)
 set_target_properties(my_import_std_modules PROPERTIES
-	CXX_EXTENSIONS OFF
 	EXPORT_NAME modules
 )
 my_import_std_apply_compile_settings(TARGET my_import_std_modules)
-cmake_generic_build_infrastructure_set_pdb_output_directory(
-	TARGET my_import_std_modules
-	OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/$<CONFIG>/bin"
-)
 
 add_executable(my_import_std_app src/app/main.cpp)
-target_compile_features(my_import_std_app PRIVATE cxx_std_23)
 target_link_libraries(my_import_std_app PRIVATE MyImportStd::modules)
 set_target_properties(my_import_std_app PROPERTIES
-	CXX_EXTENSIONS OFF
 	VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:my_import_std_app>"
 )
 my_import_std_apply_compile_settings(TARGET my_import_std_app)
-cmake_generic_build_infrastructure_set_pdb_output_directory(
-	TARGET my_import_std_app
-	OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/$<CONFIG>/bin"
-)
 
 if(MY_IMPORT_STD_ENABLE_PCH)
 	target_precompile_headers(my_import_std_app PRIVATE
@@ -81,12 +63,7 @@ endif()
 if(MY_IMPORT_STD_BUILD_EXAMPLES)
 	add_executable(my_import_std_example examples/module_consumer.cpp)
 	target_link_libraries(my_import_std_example PRIVATE MyImportStd::modules)
-	set_target_properties(my_import_std_example PROPERTIES CXX_EXTENSIONS OFF)
 	my_import_std_apply_compile_settings(TARGET my_import_std_example)
-	cmake_generic_build_infrastructure_set_pdb_output_directory(
-		TARGET my_import_std_example
-		OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/$<CONFIG>/bin"
-	)
 endif()
 
 if(BUILD_TESTING)

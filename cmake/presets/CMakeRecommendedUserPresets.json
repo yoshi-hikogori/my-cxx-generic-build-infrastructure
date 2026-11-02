@@ -1,0 +1,44 @@
+{
+	"$schema": "https://gitlab.kitware.com/cmake/cmake/-/raw/master/Help/manual/presets/schema.json",
+	"version": 13,
+	"cmakeMinimumRequired": { "major": 4, "minor": 5, "patch": 0 },
+	"include": ["../../CMakePresets.json"],
+	"configurePresets": [
+		{
+			"name": "base:user",
+			"hidden": true,
+			"inherits": ["debug:Output", "trace:Expanded"],
+			"description": "利用者設定の基本設定",
+			"cacheVariables": {
+				"CMAKE_COLOR_DIAGNOSTICS": { "type": "BOOL", "value": "ON" },
+				"CMAKE_INSTALL_MESSAGE": "ALWAYS"
+			}
+		},
+		{
+			"name": "user-windows-clang_cl",
+			"inherits": ["base:user", "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3"],
+			"displayName": "User Windows clang-cl",
+			"description": "利用者設定付きの主構成"
+		}
+	],
+	"buildPresets": [
+		{ "name": "build-user-windows-clang_cl-Debug", "inherits": "build-build_type:Debug", "configurePreset": "user-windows-clang_cl" },
+		{ "name": "build-user-windows-clang_cl-Release", "inherits": "build-build_type:Release", "configurePreset": "user-windows-clang_cl" }
+	],
+	"testPresets": [
+		{ "name": "test-user-windows-clang_cl-Debug", "inherits": ["test-build_type:Debug", "test-output:On_failure"], "configurePreset": "user-windows-clang_cl" },
+		{ "name": "test-user-windows-clang_cl-Release", "inherits": ["test-build_type:Release", "test-output:On_failure"], "configurePreset": "user-windows-clang_cl" }
+	],
+	"workflowPresets": [
+		{
+			"name": "validation-user-windows-clang_cl-Debug",
+			"displayName": "User configure, build, and test (Debug)",
+			"description": "利用者設定付きの主構成で生成・構築・テストする",
+			"steps": [
+				{ "type": "configure", "name": "user-windows-clang_cl" },
+				{ "type": "build", "name": "build-user-windows-clang_cl-Debug" },
+				{ "type": "test", "name": "test-user-windows-clang_cl-Debug" }
+			]
+		}
+	]
+}

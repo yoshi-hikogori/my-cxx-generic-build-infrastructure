@@ -1,0 +1,21 @@
+# package presetのvariablesやcpack -Dの適用後に検証する
+if(NOT IS_ABSOLUTE "${CPACK_PACKAGE_DIRECTORY}")
+	message(FATAL_ERROR "CPACK_PACKAGE_DIRECTORYには絶対パスを指定してください")
+endif()
+if(NOT DEFINED CPACK_PACKAGE_FILE_NAME OR CPACK_PACKAGE_FILE_NAME STREQUAL "" OR
+	CPACK_PACKAGE_FILE_NAME MATCHES "[/\\\\;]" OR
+	CPACK_PACKAGE_FILE_NAME STREQUAL "." OR CPACK_PACKAGE_FILE_NAME STREQUAL "..")
+	message(FATAL_ERROR "CPACK_PACKAGE_FILE_NAMEにはディレクトリを含まない配布物の名前を指定してください")
+endif()
+if(CGBI_CONFIGURATIONS)
+	if(NOT CPACK_BUILD_CONFIG)
+		message(FATAL_ERROR "配布する構成をconfigurationsまたはcpack -Cで指定してください：${CGBI_CONFIGURATIONS}")
+	endif()
+	foreach(configuration IN LISTS CPACK_BUILD_CONFIG)
+		if(NOT configuration IN_LIST CGBI_CONFIGURATIONS)
+			message(FATAL_ERROR "配布する構成をconfigurationsまたはcpack -Cで指定してください：${CGBI_CONFIGURATIONS}")
+		endif()
+	endforeach()
+elseif(CPACK_BUILD_CONFIG AND NOT CPACK_BUILD_CONFIG STREQUAL CGBI_BUILD_TYPE)
+	message(FATAL_ERROR "配布する構成がビルドのCMAKE_BUILD_TYPEと一致しません：${CGBI_BUILD_TYPE}")
+endif()

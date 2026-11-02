@@ -1,4 +1,4 @@
-# Linux上のネイティブビルド専用。コンパイラはプリセットで変更できる
+# Linux上のネイティブビルド専用。コンパイラは事前定義設定で変更できる
 if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 	message(FATAL_ERROR "Linux.cmakeはLinux上のネイティブビルド専用です。クロスビルドには専用のSDKツールチェーンが必要です")
 endif()

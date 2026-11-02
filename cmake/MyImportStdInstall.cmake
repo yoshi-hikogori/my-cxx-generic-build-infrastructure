@@ -35,16 +35,7 @@ block(SCOPE_FOR VARIABLES DIAGNOSTICS)
 		DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/MyImportStd"
 	)
 
-	if(MY_IMPORT_STD_ENABLE_PACKAGING)
-		set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-		if(NOT DEFINED CPACK_PACKAGE_DIRECTORY)
-			set(CPACK_PACKAGE_DIRECTORY "${PROJECT_SOURCE_DIR}/dist")
-		endif()
-		cmake_generic_build_infrastructure_enable_packaging(
-			GENERATORS ZIP
-			OUTPUT_DIRECTORY "${CPACK_PACKAGE_DIRECTORY}"
-			FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
-			CHECKSUM_TARGET verify-package-checksum
-		)
-	endif()
+	cmake_generic_build_infrastructure_register_distribution(
+		CHECKSUM_TARGET verify-package-checksum
+	)
 endblock()

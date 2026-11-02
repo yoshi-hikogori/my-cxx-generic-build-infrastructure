@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 4.5)
+
+# cpack --presetはconfigure presetのbinaryDirで実行される
+file(REAL_PATH "." build_directory)
+set(metadata_file "${build_directory}/CxxGenericBuildInfrastructureBuild.cmake")
+if(NOT EXISTS "${metadata_file}")
+	message(FATAL_ERROR "ビルド情報がありません。配布対象のconfigure presetを先に生成してください：${metadata_file}")
+endif()
+include("${metadata_file}")
+if(NOT build_directory STREQUAL CGBI_BINARY_DIR OR
+	NOT EXISTS "${build_directory}/cmake_install.cmake")
+	message(FATAL_ERROR "配布対象のビルドディレクトリが一致しないか、install定義がありません：${build_directory}")
+endif()
+
+set(CPACK_PACKAGE_NAME "${CGBI_PROJECT_NAME}")
+set(CPACK_PACKAGE_VERSION "${CGBI_PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION "${CGBI_PROJECT_NAME}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${CGBI_PROJECT_NAME}")
+set(CPACK_PACKAGE_FILE_NAME "${CGBI_PROJECT_NAME}-${CGBI_PROJECT_VERSION}-${CGBI_SYSTEM_NAME}-${CGBI_SYSTEM_PROCESSOR}")
+set(CPACK_PACKAGE_DIRECTORY "${CGBI_SOURCE_DIR}/dist")
+if(DEFINED ENV{CGBI_PACKAGE_DIRECTORY})
+	set(CPACK_PACKAGE_DIRECTORY "$ENV{CGBI_PACKAGE_DIRECTORY}")
+	if(CPACK_PACKAGE_DIRECTORY STREQUAL "")
+		message(FATAL_ERROR "CGBI_PACKAGE_DIRECTORYには空でないパスを指定してください")
+	endif()
+	cmake_path(ABSOLUTE_PATH CPACK_PACKAGE_DIRECTORY BASE_DIRECTORY "${CGBI_BINARY_DIR}" NORMALIZE)
+endif()
+# INSTALL_CMAKE_PROJECTSのpreinstallによる暗黙のビルドを避ける
+set(CPACK_INSTALL_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/InstallPackage.cmake")
+set(CPACK_PACKAGE_CHECKSUM SHA256)
+set(CPACK_ARCHIVE_ENCODING UTF-8)
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/ValidatePackage.cmake")

@@ -57,9 +57,10 @@ target定義はルートに残し、共通設定と配布設定を分離して�
 - [汎用ビルド基盤のtarget設定](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureTargets.cmake)：compiler設定、成果物・PDBの出力先、静的MSVCランタイムの適用。
 - [標的環境の処理](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePlatform.cmake)：architecture・CPU水準・実行環境の検証とCPUオプションの適用。
 - [計測処理](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureInstrumentation.cmake)：CMakeの計測登録とClangのtrace設定。
-- [配布処理](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake)：CPack設定生成とSHA-256検証targetの登録。
+- [配布への接続](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake)：ビルド情報・薄い接続ファイルとSHA-256検証targetの登録。
+- [独立した配布entry](../cmake/generic-build-infrastructure/CPackConfig.cmake)：配布実行時のCPack設定。通常configureでは実行しない。
 - [プロジェクトtarget設定](../cmake/MyImportStdTargetSettings.cmake)：案件のCPU・architecture・計測設定を汎用関数へ渡す処理。
-- [install/export・CPack設定](../cmake/MyImportStdInstall.cmake)：このプロジェクトの配布仕様。
+- [install/export設定](../cmake/MyImportStdInstall.cmake)：このプロジェクトのinstall対象とexport仕様。
 - [toolchain](../cmake/toolchains/)：native環境のcompiler選択と、SDK付属toolchainへの委譲。
 
 汎用ビルド基盤のtarget設定はtarget作成後に呼び出します。ローカルのcompiled targetを指すaliasも使えます。
@@ -77,19 +78,16 @@ cmake_generic_build_infrastructure_set_pdb_output_directory(
 ```
 
 このプロジェクトでは汎用compile設定にCPU・AVX2・計測設定を加える関数を使います。
-PDBの出力先はプロジェクト側で指定します。
+成果物とPDBの出力先は、案件の`base:project` presetで`CMAKE_*_OUTPUT_DIRECTORY`として宣言します。
 汎用モジュールは案件の変数を参照せず、他のリポジトリからも直接includeできます。
 出力先と静的ランタイムの関数は後続targetの初期値を設定するため、target作成前に呼び出します。
 CPU水準・出力レイアウト・静的ランタイムの採否は案件側で決めます。
 
 ```cmake
 my_import_std_apply_compile_settings(TARGET my_import_std_app)
-cmake_generic_build_infrastructure_set_pdb_output_directory(
-	TARGET my_import_std_app
-	OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/$<CONFIG>/bin"
-)
 ```
 
+出力先・PDB設定関数は、target別の指定などが必要な利用先のために残しています。
 PDB関数には絶対パスの`OUTPUT_DIRECTORY`を指定します。出力先は利用側で決めます。
 WindowsのMSVC形式linker以外ではtargetを変更しません。プロジェクト関数は汎用のcompile設定に、
 architecture・CPU基準・AVX2・instrumentationの設定を加えます。
@@ -97,31 +95,52 @@ architecture・CPU基準・AVX2・instrumentationの設定を加えます。
 `ARGNC`で余分な引数を拒否します。未知引数や欠落値の検証は別途行います。
 余分な引数の検証まで含めてこのヘルパーの契約どおり使うには、CMake 4.5以降が必要です。
 関数内の作業変数はローカルです。出力先とランタイムの初期値は呼び出し元へ返します。
-配布設定の一時変数と診断設定は
-`block(SCOPE_FOR VARIABLES DIAGNOSTICS)`で隔離し、CPack設定ファイルはそのblock内で
-生成します。SDKのinclude処理では変数スコープを作りません。
+install設定の変数と診断設定は`block(SCOPE_FOR VARIABLES DIAGNOSTICS)`で隔離します。
+SDKのinclude処理では変数スコープを作りません。
 
 ### 配布処理の再利用
 
-install対象・export・バージョン互換性・配布形式・保存先・命名は案件側で定めます。
-汎用の配布関数は、必須入力と保存先を検証し、CPack設定とSHA-256検証targetを生成します。
-関数内の変数は呼び出し元に残りません。CPackの追加設定は呼び出し元から引き継ぎ、
-archiveのファイル名encodingだけは、指定がない場合にUTF-8を設定します。
-`CPACK_INCLUDE_TOPLEVEL_DIRECTORY`など、配布物の構成に関する選択は案件側に残します。
+install対象・export・バージョン互換性は案件側の`install()`で定めます。
+配布形式とCPackの採用値はpackage presetに宣言します。配布用configureや機能スイッチは不要です。
 
 ```cmake
 include("${CMAKE_CURRENT_LIST_DIR}/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake")
 
-cmake_generic_build_infrastructure_enable_packaging(
-	GENERATORS ZIP
-	OUTPUT_DIRECTORY "${CPACK_PACKAGE_DIRECTORY}"
-	FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
+cmake_generic_build_infrastructure_register_distribution(
 	CHECKSUM_TARGET verify-package-checksum
 )
 ```
 
-`OUTPUT_DIRECTORY`は絶対パス、`FILE_NAME`はディレクトリを含まない名前、
-`CHECKSUM_TARGET`は未使用のtarget名です。SHA-256検証スクリプトも汎用モジュールと同梱します。
+通常configureで行うのは、ビルド先・案件名・version・標的・generator・構成の情報を
+`CxxGenericBuildInfrastructureBuild.cmake`に保存し、独立entryをincludeするだけの
+`DistributionConfig.cmake`と、明示実行するchecksum検証targetを登録することです。
+`CHECKSUM_TARGET`には未使用のtarget名を指定します。
+`include(CPack)`、配布形式の検証、配布専用ツールの探索、CPackのpackage target生成は行いません。
+
+各package presetに`"configFile": "DistributionConfig.cmake"`を直接指定します。
+CMake 4.5.0-rc1はこのフィールドを継承せず、CMake Tools 1.24.42はそのマクロを展開しないため、
+hidden presetへの集約や`${sourceDir}`による指定は避けます。
+相対パスはconfigure presetのbinaryDir基準なので、利用者の任意のbuild先にも追従します。
+接続ファイルを標準名`CPackConfig.cmake`にしないのは、CMakeによるpackage targetの自動登録を避けるためです。
+
+配布は`cpack --preset <package名>`で単独実行できます。CPackは既存ビルドツリーの
+`install()`を再利用し、ビルド・テストは起動しません。不足する成果物はinstall時にエラーにします。
+install工程では生成済みの`cmake_install.cmake`を実行します。
+`CPACK_INSTALL_CMAKE_PROJECTS`によるgenerator依存のpreinstallビルドは使いません。
+一括操作はconfigure→build→test→package→checksumのdistribution workflowが担います。
+通常buildはZIPを生成せず、checksum targetも`ALL`には含めません。
+package単独実行ではSHA-256を生成しますが、検証操作までは実行しません。
+
+配布時に出力先・ファイル名・構成を検証します。multi-configでは配布する構成の明示が必要です。
+追加のCPack設定はpackage presetの`variables`で渡します。configure時の`set(CPACK_...)`や
+cache変数は別プロセスのCPackへ引き継ぎません。
+環境変数`CGBI_PACKAGE_DIRECTORY`は絶対パス、または対象build先を基準にした相対パスを受け取ります。
+checksum targetにも同じ値を指定してください。単独の検証スクリプトでは、相対値は起動時の作業ディレクトリ基準です。
+空の値は拒否します。CPackの`variables`で直接指定する`CPACK_PACKAGE_DIRECTORY`は引き続き絶対パスが必要です。
+この案件では`package-bundle:project`で`CPACK_INCLUDE_TOPLEVEL_DIRECTORY=OFF`を選択しています。
+旧`*_ENABLE_PACKAGING`・`feature:Packaging`・`-packaging`専用configure/build/test presetは削除しました。
+旧build先は自動で削除・移動しません。過去の`CPackConfig.cmake`が残るビルド先では、
+旧package targetも残り得ます。移行後は新しいpackage presetを使ってください。
 
 ### オプション
 
@@ -134,7 +153,6 @@ cmake_generic_build_infrastructure_enable_packaging(
 | `MY_IMPORT_STD_CPU_BASELINE` | 空 | `x86-64-v3`または`armv8.2-a`を指定。通常のnative presetはarchitecture別に設定 |
 | `MY_IMPORT_STD_TARGET_ENVIRONMENT` | 空 | `gnu`を指定するとLinux/glibcを要求。Linux presetで設定 |
 | `MY_IMPORT_STD_USE_STATIC_RUNTIME` | OFF | MSVC ABIの静的runtimeを使用 |
-| `MY_IMPORT_STD_ENABLE_PACKAGING` | OFF | ZIP生成と検査合計検証targetを用意 |
 | `MY_IMPORT_STD_ENABLE_INSTRUMENTATION` | OFF | build・test・installの時間と出力をローカルに保存。Clangではcompiler time traceも取得 |
 
 AVX2を有効にした生成物にはAVX2対応CPUが必要です。実行時のCPU判定やfallbackはありません。
@@ -153,8 +171,10 @@ MSVCの`/arch:armv8.2`で指定します。compilerがフラグに対応しな�
 CMakeが生成する標準ライブラリのBMIにも、利用targetに合わせたcompile設定が引き継がれます。
 examplesはビルド用の利用例であり、配布パッケージには含めません。
 
-配布先の既定値は`${PROJECT_SOURCE_DIR}/dist`です。
-`CPACK_PACKAGE_DIRECTORY`に絶対パスを指定すれば変更できます。
+配布先の既定値はソースルートの`dist`です。
+packageとchecksumの両presetの`environment`で`CGBI_PACKAGE_DIRECTORY`に絶対パスを
+指定すれば、同じ場所へ変更できます。環境変数のマクロ展開はCMake Toolsでも利用できます。
+CLIではCPackの`-B`、または`-D CPACK_PACKAGE_DIRECTORY=...`も使えます。
 ZIPのファイル名encodingはUTF-8を既定にし、`CPACK_ARCHIVE_ENCODING`で変更できます。
 圧縮レベルは通常構成ではCPackの既定値を使い、検証用presetでは
 `CPACK_ARCHIVE_COMPRESSION_LEVEL=6`を指定しています。
@@ -186,23 +206,23 @@ Windows toolchainは標準変数`CMAKE_SYSTEM_PROCESSOR`を入力とし、案件
 実targetの検証条件である`MY_IMPORT_STD_TARGET_ARCH`を一緒に設定します。
 **直接指定する場合の変更点：** `MY_IMPORT_STD_TARGET_ARCH`だけではcompilerの標的を選択しません。
 Windows toolchainで標的を選ぶ場合は`CMAKE_SYSTEM_PROCESSOR`も指定してください。
-既存のプリセットの選択方法と動作は変わりません。Linux nativeではarchitectureを選択する
+既存の事前定義設定の選択方法と動作は変わりません。Linux nativeではarchitectureを選択する
 compiler環境を準備し、案件側の検証で一致を確認します。Linux cross buildを追加したわけではありません。
 
-Linuxでは`x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3`または`x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3`を使います。
+Linuxでは`x86_64-@-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3`または`x86_64-@-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3`を使います。
 対応compiler・標準ライブラリと、module dependency scannerが必要です。
 Linux向けクロスビルドは今回の対象外です。
-Linux AArch64用には`aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A`または
-`aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A`を使います。
+Linux AArch64用には`aarch64-@-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A`または
+`aarch64-@-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A`を使います。
 両architectureともGNU/glibcに限定し、実際のcompiler macro・pointer幅と
 `<features.h>`の`__GLIBC__`をconfigure時に検証します。musl環境は対象外です。
 Linux・Windows ARM64のアプリと`import std`の実ビルドは未検証です。
 
-Emscriptenは`*-*-emscripten-*-Emscripten_sdk-Ninja-Debug`を使います。`EMSCRIPTEN_ROOT`にSDKの絶対パスを指定するか、
+Emscriptenは`@-@-emscripten-@-Emscripten_sdk-Ninja-Debug`を使います。`EMSCRIPTEN_ROOT`にSDKの絶対パスを指定するか、
 環境変数`EMSCRIPTEN`または`EMSDK`を設定してください。
 `cmake/Modules/Platform/Emscripten.cmake`へ処理を委譲します。
 
-WASIは`*-*-*-*-WASI_sdk-Ninja-Debug`を使います。`WASI_SDK_PATH`にSDKの絶対パスを指定します。
+WASIは`@-@-@-@-WASI_sdk-Ninja-Debug`を使います。`WASI_SDK_PATH`にSDKの絶対パスを指定します。
 環境変数`WASI_SDK_PATH`でも指定できます。`share/cmake/wasi-sdk.cmake`へ処理を委譲します。
 SDKの不足や無効なパスはエラーになり、別compilerへ切り替えません。
 
@@ -241,7 +261,7 @@ SDK委譲のテストにはfixtureを使い、実SDKでのビルド成功を示�
 汎用ビルド基盤の軸には案件固有の変数やパスを含めません。
 汎用の`system:*`軸は`${sourceDir}/cmake/toolchains/...`で同梱toolchainを参照します。
 再利用先でもtoolchainはソースルートの`cmake/toolchains`に配置してください。
-CMake Tools 1.24.42では、継承した`${fileDir}`が定義元ではなく継承先のプリセットの場所を
+CMake Tools 1.24.42では、継承した`${fileDir}`が定義元ではなく継承先の事前定義設定の場所を
 基準に展開されるため、この参照には`${fileDir}`を使いません。
 install・検査合計検証・test/install準備targetの操作軸も汎用側に置きます。
 プロジェクト軸に置くのはCPU要件、標的の選択と検証条件への接続、機能選択、短い出力先です。
@@ -259,13 +279,12 @@ install・検査合計検証・test/install準備targetの操作軸も汎用側�
 | architecture/toolset | `architecture:x64(strategy:external)`、`toolset:version(strategy:external)` | 外部環境によるarchitecture・toolsetの選択 |
 | compiler | `compiler:clang_cl`、`compiler:clang++(system:Linux)` | compilerの実行ファイル |
 | linker | `linker:LLD` | 明示的なlinker選択 |
-| 機能 | `feature:Packaging`、`feature:Instrumentation` | 既定値からの機能切り替え |
+| 機能 | `feature:Examples`、`feature:Instrumentation` | 既定値からの機能切り替え |
 | 診断 | `diagnostics:Developer`、`diagnostics:Strict_warnings` | 警告とエラーの方針 |
 | debug/trace | `debug:Quiet`、`trace:Expanded` | configureの出力とtrace設定 |
 | build操作 | `install-operation:Default`、`verify-checksum-operation:Default` | 実行するtarget |
 | test出力 | `test-output:On_failure` | 失敗したテストの出力表示 |
 | 配布形式 | `package-format:ZIP` | CPackの出力形式 |
-| 出力先 | `layout:Windows_clang_cl` | preset名から独立したbuild・install先 |
 
 `bundle:development`は`base:project`と共有の警告・エラー方針を組み合わせる便宜presetです。
 色付き診断、configureのdebug/trace、インストール時の表示量、テスト失敗時の出力表示は
@@ -296,46 +315,29 @@ Debugだけを生成する方針は`build_types:Debug`へ分け、
 `bundle:ASan-clang_cl-Debug`をルートの組み合わせ済みpresetとして用意しています。
 toolsetの`version=`と空コメントは準備用の値を維持しており、実際のversion指定は別途必要です。
 
-### 利用者のプリセット
+### 利用者の事前定義設定
 
-個人の表示設定はルートの`CMakeUserPresets.json`に置きます。このファイルはGitの追跡対象から
-除外してあり、共有presetからはincludeしません。CMakeは同じディレクトリの
-`CMakePresets.json`を暗黙に読み込むため、個人側から共有presetを継承できます。
-共有側から個人側を継承することはできません。
+利用者設定の入口である[CMakeUserPresets.json](../CMakeUserPresets.json)も、
+テンプレートの一部としてGitの追跡対象にしています。入口には
+[CMakeRecommendedUserPresets.json](../cmake/presets/CMakeRecommendedUserPresets.json)のincludeだけを置き、
+色付き診断・debug/traceなどの推奨例はinclude先で定義します。
+推奨例は案件の共有構成を継承するため、`../../CMakePresets.json`を明示的にincludeします。
+共有側から利用者設定をinclude・継承することはありません。
 
-現在のローカルファイルには、Windows clang-cl用の`user-windows-clang_cl`と
+推奨例には、Windows clang-cl用の`user-windows-clang_cl`と
 Debug/Releaseのbuild・test、Debugのworkflowを用意しています。
-共有構成とキャッシュが混ざらないよう、build・install先は個人用に分けています。
+共有構成と同じ`${presetName}`の規則を継承し、異なるpreset名でキャッシュを分離します。
 
 ```powershell
 cmake --workflow --preset validation-user-windows-clang_cl-Debug
 ```
 
-個人用ファイルがない環境では共有presetをそのまま利用できます。
-別環境で個人設定を作る場合は、例えば次の内容を`CMakeUserPresets.json`に保存します。
-build・test・workflowも個人用configureを参照するpresetとして別途定義します。
-
-```json
-{
-  "version": 13,
-  "configurePresets": [
-    {
-      "name": "user-windows-clang_cl",
-      "inherits": [
-        "debug:Output",
-        "trace:Expanded",
-        "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3"
-      ],
-      "binaryDir": "${sourceDir}/build/user-windows-clangcl",
-      "installDir": "${sourceDir}/install/user-windows-clangcl",
-      "cacheVariables": {
-        "CMAKE_COLOR_DIAGNOSTICS": true,
-        "CMAKE_INSTALL_MESSAGE": "ALWAYS"
-      }
-    }
-  ]
-}
-```
+利用者設定がない環境でも共有presetをそのまま利用できます。
+個人設定を追加する場合は、入口のincludeを残して`configurePresets`などを追記します。
+推奨例と同名のpresetは定義せず、別名のpresetで`base:user`と対象の共有構成を継承してください。
+build・test・workflowも、そのconfigureを参照するpresetとして定義します。
+推奨例は任意に選択するためのもので、共有構成へ自動適用される設定ではありません。
+入口もGit管理するため、個人の絶対パスや機密情報をコミットしないよう注意してください。
 
 既存のbuildディレクトリに残るキャッシュ値は、共有presetから設定を取り除いても消えません。
 共有側の既定動作を確認する場合は、新しいbuildディレクトリを使います。
@@ -373,40 +375,75 @@ triple内部の`x86_64`等は正式な表記を保持し、スペース置換の
 Windowsの既定のx64 developer環境では、Clangのtargetが
 `x86_64-pc-windows-msvc`であることを確認しています。
 native presetはx86_64/AArch64を分け、Linuxのenvironmentは`gnu`に固定しています。
-未指定のtriple要素は`*`とし、Linuxのvendorは未指定のままです。
-Emscriptenは`*-*-emscripten-*`、WASIは`*-*-*-*`にSDK名を続けます。
+未指定のtriple要素は`@`とし、Linuxのvendorは未指定のままです。
+Emscriptenは`@-@-emscripten-@`、WASIは`@-@-@-@`にSDK名を続けます。
 WASIはSDKにより`wasi`・`wasip1`・`wasip2`等のOS表記が異なるため、この要素も未指定です。
 SDKには引き続きtargetを委譲し、architecture・vendor・environment・WASIの世代を推測しません。
-`*`はこのプロジェクトのpreset名だけの記法であり、compilerの`--target`に渡す値でも
-LLVMの`unknown` vendorと同じ値でもありません。CLIでは`*`を含むpreset名を引用してください。
+`@`はこのプロジェクトのpreset名だけの記法であり、compilerの`--target`に渡す値でも
+LLVMの`unknown` vendorと同じ値でもありません。Windowsでもディレクトリ名に使えます。
+先頭が`@`の名前をPowerShellから指定する場合は、splattingと区別するため引用してください。
 
 configure/workflow以外のpresetは、`build-`・`build-prepare-`・`install-`・`test-`・
 `package-ZIP-`・`verify-checksum-`等の操作接頭辞を付けます。
 workflowには`validation`や`distribution`という流れの目的を付けています。
 命名順と`inherits`の優先順は別です。
 
+#### displayNameの様式
+
+利用者定義以外の組み合わせ済みpresetは、`displayName`をそれぞれ直接指定します。
+表示名のないbuild/test/packageや検証用presetにも同じ様式を適用します。
+
+`[操作 構成: ]標的OS・architecture, compiler [区別に必要な機能]`
+
+OS・architecture・compilerを主な選択軸とし、操作する構成は先頭に置きます。
+例は`Windows x86_64, clang-cl`、`Build Debug: Windows x86_64, clang-cl`です。
+通常のNinja Multi-Config、ABI・linker、architectureごとに共通のCPU baseline、
+configureの構成一覧は省きます。Visual Studio生成器は通常と異なるため表示します。
+ASan・静的runtime・計測・検証用構成は区別に必要な場合だけ角括弧内へ追加し、
+項目間の`+`や角括弧内の`,`には空白を入れません。検証用に共通のexamplesやPCH方針は詳細説明へ委ねます。
+SDKへ委譲する標的のarchitectureやABIは推測せず、SDK名とDebugを表示します。
+実験的・無効化済みの構成も区別します。
+workflowは`Validate Debug`・`Distribute ZIP Release`のように目的と構成を先に示します。
+将来、現在は共通の設定に選択肢が増えた場合は、その差を表示名にも追加してください。
+表示は英語に揃え、利用者presetの表示名は変更しません。
+これは一覧で選択するための要約であり、全キャッシュ値の一覧ではありません。
+CLIの`name`、継承関係、出力先、採用する機能は表示名の変更では変えません。
+
+#### 旧preset名からの移行
+
 | 旧configure preset名 | 新configure preset名 |
 |---|---|
 | `ninja-multi-clangcl` | `x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3` |
 | `ninja-multi-clang` | `x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3` |
 | `ninja-multi-cl` | `x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3` |
-| `ninja-multi-linux-clang` | `x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3` |
-| `ninja-multi-linux-gcc` | `x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3` |
-| `ninja-emscripten` | `*-*-emscripten-*-Emscripten_sdk-Ninja-Debug` |
-| `ninja-wasi` | `*-*-*-*-WASI_sdk-Ninja-Debug` |
+| `ninja-multi-linux-clang` | `x86_64-@-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3` |
+| `ninja-multi-linux-gcc` | `x86_64-@-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3` |
+| `ninja-emscripten` | `@-@-emscripten-@-Emscripten_sdk-Ninja-Debug` |
+| `ninja-wasi` | `@-@-@-@-WASI_sdk-Ninja-Debug` |
 
-旧名のaliasは残していません。長いpreset名をディレクトリ名に使うとWindowsのnested testで
-パス長問題が起きるため、既存の構成には`layout:*`を先に継承させ、従来の短いbuild・install・
-ZIP出力先を維持しています。ディレクトリ名に残る旧名は保存先の識別子です。
-layoutを指定しない新規構成では、baseの`${presetName}`等による出力先が使われます。
-ただし`*`を含む名前はWindowsのパスに使えないため、必ず明示的なlayoutを継承してください。
+旧名のaliasは残していません。未指定要素の旧表記`*`は、既存の名前と参照も含め`@`へ変更しました。
+build先は`build/${presetName}`、install先は`install/${presetName}`に統一し、
+個別の`layout:*`軸は撤去しました。利用者設定・作業用構成もこの規則を継承します。
+成果物はbuild先の`$<CONFIG>/lib`・`$<CONFIG>/bin`に置き、PDBも`bin`に出力します。
+言語規格・拡張の可否もpresetで宣言します。ただしexportするライブラリの
+`PUBLIC cxx_std_23`は、利用側への要求を伝えるためtargetに残します。
+この案件はpreset経由のconfigureを前提とします。
+旧build・install先は移動・削除しないため、必要な成果物を確認してから整理してください。
+
+長いbuild先の下に検証fixtureを重ねると、compiler確認のobjectディレクトリが264文字になり、
+WindowsのNinjaで失敗していました。fixtureは`build/.checks/<build先のhash>/<構成>/`へ切り離しました。
+build先のSHA-256の先頭16桁とDebug/Releaseによって隔離し、通常のbuild先の名前を短く戻しません。
+テストスクリプトへ渡す`CHECK_BINARY_DIR`はこの作業先です。
 
 ### 独立した検証用preset
 
 [作業用preset](../work/cmake-refactoring/CMakePresets.json)は通常のpresetをincludeし、
 `--presets-file`で明示的に読み込みます。`${fileDir}`はinclude元の場所を、
 `${configurePresetName}`は対応するconfigure preset名を表します。
-build・install・ZIPはpresetごとの専用ディレクトリに分けています。
+build・installは通常構成と同じ共通規則を継承し、ZIPはbuild先の`packages`に分けています。
+ZIPとchecksumの環境変数`CGBI_PACKAGE_DIRECTORY`には相対値`packages`を指定します。
+CMake Tools 1.24.42が展開しない`${configurePresetName}`や、
+操作preset名として再展開される継承環境内の`${presetName}`には依存しません。
 Windowsではdeveloper環境から、プロジェクトルートで実行してください。
 
 ```powershell

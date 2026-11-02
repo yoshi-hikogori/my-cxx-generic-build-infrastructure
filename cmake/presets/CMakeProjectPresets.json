@@ -4,118 +4,6 @@
 	"cmakeMinimumRequired": { "major": 4, "minor": 5, "patch": 0 },
 	"configurePresets": [
 		{
-			"name": "layout:Windows_clang_cl",
-			"hidden": true,
-			"description": "Windowsのclang-cl構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-multi-clangcl",
-			"installDir": "${sourceDir}/install/ninja-multi-clangcl"
-		},
-		{
-			"name": "layout:Windows_clang",
-			"hidden": true,
-			"description": "Windowsのclang++構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-multi-clang",
-			"installDir": "${sourceDir}/install/ninja-multi-clang"
-		},
-		{
-			"name": "layout:Windows_cl",
-			"hidden": true,
-			"description": "Windowsのcl構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-multi-cl",
-			"installDir": "${sourceDir}/install/ninja-multi-cl"
-		},
-		{
-			"name": "layout:Windows_Visual_Studio",
-			"hidden": true,
-			"description": "Visual Studio構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/visual-studio-cl",
-			"installDir": "${sourceDir}/install/visual-studio-cl"
-		},
-		{
-			"name": "layout:Linux_clang",
-			"hidden": true,
-			"description": "LinuxのClang構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-multi-linux-clang",
-			"installDir": "${sourceDir}/install/ninja-multi-linux-clang"
-		},
-		{
-			"name": "layout:Linux_gcc",
-			"hidden": true,
-			"description": "LinuxのGCC構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-multi-linux-gcc",
-			"installDir": "${sourceDir}/install/ninja-multi-linux-gcc"
-		},
-		{
-			"name": "layout:Emscripten",
-			"hidden": true,
-			"description": "Emscripten構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-emscripten",
-			"installDir": "${sourceDir}/install/ninja-emscripten"
-		},
-		{
-			"name": "layout:WASI",
-			"hidden": true,
-			"description": "WASI構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-wasi",
-			"installDir": "${sourceDir}/install/ninja-wasi"
-		},
-		{
-			"name": "layout:Windows_ASan",
-			"hidden": true,
-			"description": "ASan構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-multi-clangcl-asan",
-			"installDir": "${sourceDir}/install/ninja-multi-clangcl-asan"
-		},
-		{
-			"name": "layout:Windows_static_runtime",
-			"hidden": true,
-			"description": "静的runtime構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-multi-clangcl-static-runtime",
-			"installDir": "${sourceDir}/install/ninja-multi-clangcl-static-runtime"
-		},
-		{
-			"name": "layout:Windows_packaging",
-			"hidden": true,
-			"description": "配布物生成構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/ninja-multi-clangcl-package",
-			"installDir": "${sourceDir}/install/ninja-multi-clangcl-package"
-		},
-		{
-			"name": "layout:Windows_ARM64_clang_cl",
-			"hidden": true,
-			"description": "Windows ARM64のclang-cl構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/win-arm64-clangcl",
-			"installDir": "${sourceDir}/install/win-arm64-clangcl"
-		},
-		{
-			"name": "layout:Windows_ARM64_clang",
-			"hidden": true,
-			"description": "Windows ARM64のclang++構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/win-arm64-clang",
-			"installDir": "${sourceDir}/install/win-arm64-clang"
-		},
-		{
-			"name": "layout:Windows_ARM64_cl",
-			"hidden": true,
-			"description": "Windows ARM64のcl構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/win-arm64-cl",
-			"installDir": "${sourceDir}/install/win-arm64-cl"
-		},
-		{
-			"name": "layout:Linux_AArch64_clang",
-			"hidden": true,
-			"description": "Linux AArch64のClang構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/linux-arm64-clang",
-			"installDir": "${sourceDir}/install/linux-arm64-clang"
-		},
-		{
-			"name": "layout:Linux_AArch64_gcc",
-			"hidden": true,
-			"description": "Linux AArch64のGCC構成の出力先を定める設定",
-			"binaryDir": "${sourceDir}/build/linux-arm64-gcc",
-			"installDir": "${sourceDir}/install/linux-arm64-gcc"
-		},
-		{
 			"name": "target_arch:x86_64",
 			"hidden": true,
 			"description": "x86_64を対象architectureに指定する設定",
@@ -168,12 +56,6 @@
 			"hidden": true,
 			"description": "静的MSVCランタイムを用いる構成の設定",
 			"cacheVariables": { "MY_IMPORT_STD_USE_STATIC_RUNTIME": { "type": "BOOL", "value": "ON" } }
-		},
-		{
-			"name": "feature:Packaging",
-			"hidden": true,
-			"description": "CPackによる配布物生成を有効にする構成の設定",
-			"cacheVariables": { "MY_IMPORT_STD_ENABLE_PACKAGING": { "type": "BOOL", "value": "ON" } }
 		},
 		{
 			"name": "feature:Instrumentation",

@@ -25,7 +25,7 @@
 
 利用者の選択に従い、Windows/Linuxともx86_64とAArch64を別の構成として扱う。
 x86_64はx86-64-v3、AArch64はArmv8.2-A、Linuxの実行環境はGNU/glibcに限定する。
-未指定のtriple要素は`*`にする。CPU水準はtripleに含めず、独立した軸で指定する。
+未指定のtriple要素は`@`にする。CPU水準はtripleに含めず、独立した軸で指定する。
 
 - [x] architecture・CPU水準・実行環境の軸を用意し、native presetへ接続する。
 - [x] compilerの実target・pointer幅・glibcと、CPUフラグの対応をconfigure時に検証する。
@@ -401,7 +401,7 @@ stashの欠落したホストファイルや、OS設定に静的runtime等を混
 ## 独立した最小使用例で確認した分離課題
 
 単一の`main.cpp`から`import std;`を使う独立した案件を作成した際に確認した。
-最小化する対象は案件固有の実装であり、複数環境の構成、プリセットの分割、
+最小化する対象は案件固有の実装であり、複数環境の構成、事前定義設定の分割、
 workspace、構築・テスト・配布・デバッグの開発フローは保持する。
 以下の課題について境界を相談し、元の基盤と独立例の両方を更新した。
 
@@ -420,16 +420,16 @@ workspace、構築・テスト・配布・デバッグの開発フローは保�
   [検証スクリプト](../../cmake/generic-build-infrastructure/VerifyPackageChecksums.cmake)も同じ場所に移した。
   元案件と実行ファイルだけの独立例が、同じ汎用処理を使用する。
 
-- [x] プリセットに混在する再利用可能な接続と案件の採用値を整理する。
-  [案件別プリセット](../../cmake/presets/CMakeProjectPresets.json)には、
+- [x] 事前定義設定に混在する再利用可能な接続と案件の採用値を整理する。
+  [案件別事前定義設定](../../cmake/presets/CMakeProjectPresets.json)には、
   出力レイアウト・CPU要件・機能選択と、案件のキャッシュ変数への接続を残した。
   toolchain参照と操作軸は汎用側へ移し、toolchainのパスは`${sourceDir}/cmake/toolchains/...`とした。
-  [ルートプリセット](../../CMakePresets.json)の環境別の組み合わせと公開構成は案件側に残すことで合意した。
+  [ルート事前定義設定](../../CMakePresets.json)の環境別の組み合わせと公開構成は案件側に残すことで合意した。
   軸名と既存の構成・操作・workflowは維持し、案件別軸なしでもconfigureできる。
   当初の`${fileDir}`基準の参照はCMake本体では動作したが、CMake Tools 1.24.42が
   継承先の場所を基準に展開したため、IDE経由のconfigureに失敗した。
   このため、toolchainをソースルートの`cmake/toolchains`に置く標準配置へ変更した。
-  プリセットを別の場所へ配置したfixtureでも、この標準配置のtoolchainが選択されることを検証する。
+  事前定義設定を別の場所へ配置したfixtureでも、この標準配置のtoolchainが選択されることを検証する。
   修正後はCMake Tools経由のビルドと`my_import_std.preset_axes`が成功し、診断が解消した。
 
 - [x] workspaceの再利用箇所と案件の参照箇所を区別して説明する。
@@ -443,7 +443,7 @@ workspace、構築・テスト・配布・デバッグの開発フローは保�
 
 例側で省くのは、元案件の独自module・その利用例・ライブラリのexportと、
 基盤自体を手直しするためのfixture・作業用資料である。
-汎用CMakeモジュール、汎用プリセット、すべてのtoolchain、
+汎用CMakeモジュール、汎用事前定義設定、すべてのtoolchain、
 formatter・clangd・フォルダー設定は内容を変更せず複製する。
 
 分離後の検証では、元案件のclang-cl Debug/Releaseで関連6テストずつが成功した。
@@ -453,15 +453,17 @@ Windows toolchainはnative/cross・processor別名・未指定・競合・不正
 SDK toolchainは委譲と不足時の診断を確認した。
 元案件と独立例でclang++・MSVCのDebugビルドと実行テストも成功した。
 元案件のRelease install後、別のconsumerからexportしたmoduleを利用できることを確認した。
-既存188プリセットの実効設定をGit管理下の変更前と比較し、標準processor入力の追加と
+既存188事前定義設定の実効設定をGit管理下の変更前と比較し、標準processor入力の追加と
 同じtoolchainを指すパス表現の変更を除いて一致した。
 Linux・AArch64・実SDKでのビルドとVS CodeのデバッガーUIは未検証。
 
 ## 利用者の好みと汎用処理の追加分離
 
 - 色付き診断、configureのdebug/trace、インストール時の表示量、テスト失敗時の出力表示を、
-  共有構成での選択から外した。ローカルの`CMakeUserPresets.json`で選択する。
-- 個人用ファイルはGitの追跡対象から除外し、共有側は個人用ファイルに依存しない。
+  共有構成での選択から外した。利用者側のpresetで選択する。
+- `CMakeUserPresets.json`はテンプレートとしてGitの追跡対象にする。
+  入口には`cmake/presets/CMakeRecommendedUserPresets.json`のincludeを置き、推奨例を分離した。
+  推奨例は共有presetを明示的にincludeする。共有側は利用者側のファイルに依存しない。
   Windows clang-clの主構成に対する個人用configure/build/test/workflowを用意した。
 - 警告・エラー方針と言語規格、CPU要件、開発ツール用のcompile_commands出力は共有側に残した。
 - CPU要件の検証・オプションへの変換、計測登録とcallback、出力先と静的ランタイムの適用を
@@ -499,7 +501,7 @@ Linux・AArch64・実SDKでのビルドとVS CodeのデバッガーUIは未検�
   旧名のaliasは作らない。日本語description・コメント・空のプレースホルダーは維持する。
 - [x] READMEの実行例とpresetテストを新名へ更新する。
 
-### 出力先の分離
+### 出力先の分離（下記の「出力先統一とfixtureの隔離」で更新）
 
 長い名前を`${configurePresetName}`で出力ディレクトリへ使うと、計測構成のnested testで
 Windowsのパス長に関係するcompiler検証の失敗が起きた。
@@ -594,3 +596,60 @@ CMakeが提供しないため、これらは軸を分離しても行えない。
   Linux・Emscripten/WASI実SDKのビルドも未検証。
 - 日本語説明は目視で照合した。Pythonを実行できないため、自動文章検査は未実行。
   `yomiyasu-check: not_run reason=no_python`
+
+## 配布工程の独立化
+
+上記の配布関数・専用configureに関する記録は、この変更で更新した。
+
+- 通常configureはビルド情報と薄い`DistributionConfig.cmake`、明示実行用のchecksum targetだけを登録する。
+  `include(CPack)`・配布専用ツールの探索・配布設定の検証は実行しない。
+- [独立entry](../../cmake/generic-build-infrastructure/CPackConfig.cmake)はCPack実行時に情報を読み取り、
+  package presetの採用値を適用後に検証する。生成済みのinstallスクリプトを使い、ビルドを起動しない。
+- 配布専用configure・案件の`*_ENABLE_PACKAGING`・`feature:Packaging`を撤去した。
+  通常のRelease構成から配布し、configure→build→test→package→checksumの順序はworkflowが担う。
+- CMake 4.5.0-rc1の`configFile`継承不足とCMake Tools 1.24.42のパスマクロ展開の制約を実測した。
+  各package presetにbuild先基準の固定名を直接指定し、通常構成・利用者構成・任意のbuild先に接続する。
+- 独立fixtureで単独配布・全5段階workflow・single/multi-config・複数構成の同梱・
+  成果物不足・ビルドの非実行・出力先/名前/構成の入力検証・ZIP内容・SHA-256を確認した。
+- 基盤本体の関連6テスト、Release ZIPとmodule/exportの配置、SHA-256検証が成功した。
+  ZIPを展開した別のconsumerから`find_package(MyImportStd)`・moduleのimport・実行にも成功した。
+  独立例の配布workflowと利用者Debug workflowも成功した。
+- 基盤本体の全体workflowは、既存toolchainテストの期待する診断文
+  「対応なされていない値です」と実装の「サポートされていない値です」の不一致で停止する。
+  今回は変更しない。CMake Toolsの実行確認もactive configure presetがなく実施できず、
+  元TypeScriptの引数・環境・作業ディレクトリと、同等のCPack操作を照合した。
+
+## 出力先統一とfixtureの隔離
+
+上記のlayoutによるパス長回避策を、原因への対応に置き換えた。
+
+- 未指定のpreset名要素を既存の名前・参照・説明も含め`*`から`@`へ変更した。
+  基盤と独立使用例の全presetファイル、計308件の名前に旧表記とlayout定義がないことを確認した。
+- 案件のlayout 15件と検証用layout 5件を撤去した。利用者設定の保存先上書きも撤去し、
+  `build/${presetName}`・`install/${presetName}`を共通規則にした。
+- 成果物・PDBの出力先と言語方針は`base:project`で宣言する。
+  target側の重複設定を撤去したが、exportするmoduleの`PUBLIC cxx_std_23`と再利用用helperは維持した。
+- 旧構造では、長い計測用build先の下にhelper fixtureを置くと、compiler確認の
+  objectディレクトリが264文字になり、Ninjaのmkdir失敗を再現できた。
+  fixtureは`build/.checks/<build先のSHA-256先頭16桁>/<構成>/`へ切り離し、テスト別に分けた。
+  preset検査は実際のCTest登録を読み、6つのscriptテストの分離も確認する。
+- 作業用ZIPとchecksumには、build先基準の相対値`CGBI_PACKAGE_DIRECTORY=packages`を使う。
+  相対指定への対応は汎用entryと検証スクリプトへ追加し、独立使用例にも反映した。
+  空の環境値は拒否し、直接指定する`CPACK_PACKAGE_DIRECTORY`の絶対パス要件は維持した。
+  CMake Tools 1.24.42の元TypeScriptでは`${configurePresetName}`の展開がなく、
+  CLIでは継承環境内の`${presetName}`が操作preset名として再展開されたため、どちらにも依存しない。
+
+### 検証結果
+
+- 基盤の正式な長名build先でReleaseの関連7テストが成功した。
+  最長のclang-cl計測用presetでもDebugの関連8テストが成功し、fixture隔離の追加検査も通った。
+- clang++ Release・MSVC Debugのビルドとmodule/app/example/presetの各4テストが成功した。
+  DebugのPDBは構成別のbinへ出力された。
+- 通常・検証用のinstall準備、ZIP生成、SHA-256検証が成功した。
+  install先を参照する独立consumerでC++23の伝播、moduleのimport、ビルド・実行を確認した。
+- 配布fixtureは絶対指定・空白を含む相対指定・空値拒否を確認し、
+  新しい検証用build先への配布とchecksumも成功した。
+- 独立使用例の配布workflow全5段階、利用者Debug workflow、相対配布先の生成・検証が成功した。
+  汎用モジュール9件とtoolchain 4件は両リポジトリで同一である。
+- 既知のtoolchainテストの診断文不一致は別件として変更せず、関連スイートから除外した。
+  Linux・実SDK・IDE上の実操作は今回未検証である。既存のbuild/install成果物は削除・移動していない。

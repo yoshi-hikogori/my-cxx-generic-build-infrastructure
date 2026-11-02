@@ -72,7 +72,7 @@ file(WRITE "${fixture_source}/input.txt" "initial\n")
 file(WRITE "${fixture_source}/日本語 sample.txt" "UTF-8 archive entry\n")
 file(WRITE "${fixture_source}/CMakeLists.txt" [=[
 cmake_minimum_required(VERSION 4.5)
-project(FeatureFixture LANGUAGES NONE)
+project(FeatureFixture VERSION 1.0 LANGUAGES NONE)
 include("${INSTRUMENTATION_MODULE}")
 include("${PACKAGING_MODULE}")
 cmake_generic_build_infrastructure_enable_instrumentation(
@@ -82,12 +82,7 @@ enable_testing()
 add_test(NAME tracked COMMAND "${CMAKE_COMMAND}" -E true
 	BUILD_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/input.txt")
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/日本語 sample.txt" DESTINATION share)
-set(CPACK_ARCHIVE_COMPRESSION_LEVEL 6)
-set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-cmake_generic_build_infrastructure_enable_packaging(
-	GENERATORS ZIP
-	OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	FILE_NAME fixture
+cmake_generic_build_infrastructure_register_distribution(
 	CHECKSUM_TARGET verify-fixture-checksum
 )
 if(DEFINED CPACK_PACKAGE_FILE_NAME OR DEFINED CPACK_PACKAGE_CHECKSUM OR DEFINED arg_OUTPUT_DIRECTORY)
@@ -145,12 +140,16 @@ if(NOT result EQUAL 0 OR NOT output MATCHES "1/1 Test")
 endif()
 
 execute_process(
-	COMMAND "${cpack_command}" --config "${fixture_binary}/CPackConfig.cmake" -B "${fixture_binary}"
+	COMMAND "${cpack_command}" --config "${fixture_binary}/DistributionConfig.cmake" -B "${fixture_binary}"
+		-G ZIP -D CPACK_PACKAGE_FILE_NAME=fixture -D CPACK_INCLUDE_TOPLEVEL_DIRECTORY=OFF
+		-D CPACK_ARCHIVE_COMPRESSION_LEVEL=6
+	WORKING_DIRECTORY "${fixture_binary}"
 	COMMAND_ERROR_IS_FATAL ANY
 )
 execute_process(
 	ENCODING UTF-8
 	COMMAND "${CMAKE_COMMAND}" --build "${fixture_binary}" --target verify-fixture-checksum
+	ENVIRONMENT "CGBI_PACKAGE_DIRECTORY=${fixture_binary}"
 	COMMAND_ERROR_IS_FATAL ANY
 )
 file(ARCHIVE_EXTRACT INPUT "${fixture_binary}/fixture.zip" DESTINATION "${fixture_binary}/extracted")
@@ -184,28 +183,19 @@ file(WRITE "${packaging_source}/CMakeLists.txt" [=[
 cmake_minimum_required(VERSION 4.5)
 project(PackagingInputs LANGUAGES NONE)
 include("${PACKAGING_MODULE}")
-set(arguments GENERATORS ZIP OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-	FILE_NAME fixture CHECKSUM_TARGET verify-checksum)
-if(CASE STREQUAL "relative")
-	set(arguments GENERATORS ZIP OUTPUT_DIRECTORY relative FILE_NAME fixture CHECKSUM_TARGET verify-checksum)
-elseif(CASE STREQUAL "filename")
-	set(arguments GENERATORS ZIP OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-		FILE_NAME "../fixture" CHECKSUM_TARGET verify-checksum)
-elseif(CASE STREQUAL "missing")
-	set(arguments GENERATORS ZIP OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" FILE_NAME)
+set(arguments CHECKSUM_TARGET verify-checksum)
+if(CASE STREQUAL "missing")
+	set(arguments CHECKSUM_TARGET)
 elseif(CASE STREQUAL "unknown")
 	list(APPEND arguments UNKNOWN OFF)
 elseif(CASE STREQUAL "duplicate")
 	add_custom_target(verify-checksum)
 elseif(CASE STREQUAL "target")
-	set(arguments GENERATORS ZIP OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-		FILE_NAME fixture CHECKSUM_TARGET "bad::target")
-elseif(CASE STREQUAL "generator")
-	set(arguments OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" FILE_NAME fixture CHECKSUM_TARGET verify-checksum)
+	set(arguments CHECKSUM_TARGET "bad::target")
 endif()
-cmake_generic_build_infrastructure_enable_packaging(${arguments})
+cmake_generic_build_infrastructure_register_distribution(${arguments})
 ]=])
-foreach(case IN ITEMS relative filename missing unknown duplicate target generator)
+foreach(case IN ITEMS missing unknown duplicate target)
 	execute_process(
 		ENCODING UTF-8
 		COMMAND "${CMAKE_COMMAND}" -S "${packaging_source}" -B "${CHECK_BINARY_DIR}/packaging-${case}" -G Ninja
@@ -214,12 +204,10 @@ foreach(case IN ITEMS relative filename missing unknown duplicate target generat
 		RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error
 	)
 	string(REGEX REPLACE "[ \t\r\n]+" " " diagnostic "${output}\n${error}")
-	if(case STREQUAL "filename")
-		set(expected "FILE_NAMEにはディレクトリを含まない配布物の名前")
-	elseif(case MATCHES "^(duplicate|target)$")
+	if(case MATCHES "^(duplicate|target)$")
 		set(expected "CHECKSUM_TARGETには未使用の有効なターゲット名")
 	else()
-		set(expected "絶対パスのOUTPUT_DIRECTORY、FILE_NAME、CHECKSUM_TARGET、GENERATORS")
+		set(expected "CHECKSUM_TARGETを指定してください")
 	endif()
 	if(result EQUAL 0 OR NOT diagnostic MATCHES "${expected}")
 		message(FATAL_ERROR "配布設定 ${case}：想定した入力エラーになりませんでした：\n${output}\n${error}")
