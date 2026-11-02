@@ -4,6 +4,30 @@
 	"cmakeMinimumRequired": { "major": 4, "minor": 5, "patch": 0 },
 	"configurePresets": [
 		{
+			"name": "system:Windows(host:Windows)",
+			"hidden": true,
+			"description": "Windowsの開発環境を対象とするtoolchainの設定",
+			"toolchainFile": "${sourceDir}/cmake/toolchains/Windows.cmake"
+		},
+		{
+			"name": "system:Linux(host:Linux)",
+			"hidden": true,
+			"description": "Linuxのnative環境を対象とするtoolchainの設定",
+			"toolchainFile": "${sourceDir}/cmake/toolchains/Linux.cmake"
+		},
+		{
+			"name": "system:Emscripten",
+			"hidden": true,
+			"description": "Emscripten SDKを対象とするtoolchainの設定",
+			"toolchainFile": "${sourceDir}/cmake/toolchains/Emscripten.cmake"
+		},
+		{
+			"name": "system:WASI",
+			"hidden": true,
+			"description": "WASI SDKを対象とするtoolchainの設定",
+			"toolchainFile": "${sourceDir}/cmake/toolchains/WASI.cmake"
+		},
+		{
 			"name": "host:Windows",
 			"hidden": true,
 			"condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" },
@@ -199,6 +223,9 @@
 		}
 	],
 	"buildPresets": [
+		{ "name": "verify-checksum-operation:Default", "hidden": true, "description": "配布物のSHA-256検査合計を検証する操作の設定", "targets": ["verify-package-checksum"] },
+		{ "name": "build-prepare-operation:Test", "hidden": true, "description": "テストの依存targetを準備する操作の設定", "targets": ["test_prep/all"] },
+		{ "name": "build-prepare-operation:Test_and_install", "hidden": true, "description": "テストとinstallの依存targetを準備する操作の設定", "targets": ["test_prep/all", "install_prep/all"] },
 		{ "name": "build-build_type:Debug", "hidden": true, "description": "Debug構成を構築するための共通設定", "configuration": "Debug" },
 		{ "name": "build-build_type:Release", "hidden": true, "description": "Release構成を構築するための共通設定", "configuration": "Release" },
 		{ "name": "build-build_type:RelWithDebInfo", "hidden": true, "description": "RelWithDebInfo構成を構築するための共通設定", "configuration": "RelWithDebInfo" },

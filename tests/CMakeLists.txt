@@ -35,7 +35,7 @@ add_test(NAME my_import_std.checksums
 		"-DCHECK_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/checksum checks"
 		-P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunChecksumChecks.cmake"
 	BUILD_DEPENDS
-		"${PROJECT_SOURCE_DIR}/cmake/VerifyPackageChecksums.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/VerifyPackageChecksums.cmake"
 		"${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunChecksumChecks.cmake"
 )
 add_test(NAME my_import_std.toolchains
@@ -56,6 +56,8 @@ add_test(NAME my_import_std.cmake_features
 	BUILD_DEPENDS
 		"${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunFeatureChecks.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/MyImportStdInstall.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/VerifyPackageChecksums.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureTargets.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/SaveInstrumentation.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureInstrumentation.cmake"
@@ -75,4 +77,8 @@ add_test(NAME my_import_std.preset_axes
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePlatform.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureInstrumentation.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/SaveInstrumentation.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/Windows.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/Linux.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/Emscripten.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/WASI.cmake"
 )

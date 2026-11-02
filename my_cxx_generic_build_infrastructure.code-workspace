@@ -75,7 +75,7 @@
 		"cmake.allowUnsupportedPresetsVersions": true,
 		"cmake.autoSelectActiveFolder": false,
 		"cmake.cmakeCommunicationMode": "fileApi",
-		"cmake.copyCompileCommands": "${workspaceFolder:⚙️C++汎用開発基盤作り}/build/compile_commands.json",
+		"cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
 		"cmake.debugConfig": {
 			"name": "cmake.debugConfig",
 			"type": "cppvsdbg",
@@ -116,9 +116,9 @@
 		"cmake.outputLogEncoding": "UTF-8",
 		"cmake.revealLog": "error",
 		"cmake.sourceDirectory": [
-			"${workspaceFolder:⚙️C++汎用開発基盤作り}"
+			"${workspaceFolder}"
 		],
-		"cmake.defaultActiveFolder": "${workspaceFolder:⚙️C++汎用開発基盤作り}",
+		"cmake.defaultActiveFolder": "${workspaceFolder}",
 		"cmake.enabledOutputParsers": [
 			"cmake"
 		],

@@ -6,7 +6,7 @@ function(check_checksum case expected)
 	execute_process(
 		ENCODING UTF-8
 		COMMAND "${CMAKE_COMMAND}" "-DDIST_DIRECTORY=${CHECK_BINARY_DIR}/${case}"
-			-P "${CMAKE_CURRENT_LIST_DIR}/../../cmake/VerifyPackageChecksums.cmake"
+			-P "${CMAKE_CURRENT_LIST_DIR}/../../cmake/generic-build-infrastructure/VerifyPackageChecksums.cmake"
 		RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error
 	)
 	if(expected STREQUAL "success")

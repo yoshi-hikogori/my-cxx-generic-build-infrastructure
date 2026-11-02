@@ -156,7 +156,7 @@ toolchain導入自体は見送らず、対象を決めて実際の設定を用�
 - [x] 公開namespace・インストール先・パッケージ名の既存仕様を保つ。
 - [x] パスの基準と引用を整理する。
 - [x] 一時変数を隔離しつつ、CPackに必要な変数の伝播を維持する。
-- [x] install・利用側からの読み込みとbuild・ZIP生成・チェックサムを検証する。
+- [x] install・利用側からの読み込みとbuild・ZIP生成・検査合計を検証する。
 
 完了条件：分割前の配布仕様が保たれ、生成物を利用側から使えること。
 
@@ -204,7 +204,7 @@ toolchain導入自体は見送らず、対象を決めて実際の設定を用�
 | ヘルパー | 正常入力、未知引数、欠落値、存在しないtarget、許容値違反 |
 | パス | 空白を含むパス、適切なsource/binary/定義側directoryの使用 |
 | install/export | 利用側プロジェクトでの読み込み・build・必要に応じた実行 |
-| packaging | ZIP内容、チェックサム成功、不正データの失敗 |
+| packaging | ZIP内容、検査合計成功、不正データの失敗 |
 | toolchain | SDK不足の診断、対象環境の生成物、実行または実行不能の理由 |
 | 配置処理 | 新設した場合の出力先変更、構成別配置、fallback通知、削除範囲 |
 
@@ -233,7 +233,7 @@ toolchain導入自体は見送らず、対象を決めて実際の設定を用�
 | clang-cl、Ninja single-config、Debug、静的runtime ON・PCH OFF | build・CTest成功 |
 | modules OFF | 意図したconfigureエラーを確認 |
 | 共通関数 | 正常系、AVX2設定、非x86、未知引数、欠落値、無効target、PDB引数、OFFという名前や引数等の19ケース成功 |
-| チェックサム | 正常・大文字hash・空白入りファイル名、形式不正・長さ不正・欠落・不一致の診断を確認 |
+| 検査合計 | 正常・大文字hash・空白入りファイル名、形式不正・長さ不正・欠落・不一致の診断を確認 |
 | Windows toolchain | 実buildと接続を確認 |
 | Linux toolchain | Windowsホストを明示的に拒否。Linux実機では未検証 |
 | Emscripten/WASI | SDK不足時のエラー、fixtureによる委譲と通常変数の伝播を確認。実SDKでは未検証 |
@@ -393,10 +393,69 @@ stashの欠落したホストファイルや、OS設定に静的runtime等を混
 - build/testの構成選択をすべて接続した最終状態でも、3 compilerのDebug/Releaseで
   CTest各7件が成功した。両Clang frontendの計測presetもconfigure/build/CTest各7件が成功した。
 - 作業用の配布workflowが5段階すべて成功し、Release ZIP・SHA-256ファイルの生成と
-  チェックサム検証targetの実行を確認した。
+  検査合計検証targetの実行を確認した。
 - Linux・Emscripten/WASI実SDKのビルドは未検証。日本語説明は目視で確認し、
   yomiyasuの自動検査はPythonを実行できないため未実行。
   `yomiyasu-check: not_run reason=no_python`
+
+## 独立した最小使用例で確認した分離課題
+
+単一の`main.cpp`から`import std;`を使う独立した案件を作成した際に確認した。
+最小化する対象は案件固有の実装であり、複数環境の構成、プリセットの分割、
+workspace、構築・テスト・配布・デバッグの開発フローは保持する。
+以下の課題について境界を相談し、元の基盤と独立例の両方を更新した。
+
+- [x] Windows toolchainの案件固有の変数への依存を分離する。
+  [Windows.cmake](../../cmake/toolchains/Windows.cmake)は
+  標準変数`CMAKE_SYSTEM_PROCESSOR`を入力とし、案件変数を参照しない。
+  案件別のarchitecture軸から、標的選択用の標準変数と案件の検証用変数を設定する。
+  既存presetの動作は維持する。直接指定時に案件変数だけでは標的を選択しなくなる変更は合意済み。
+  Clang target選択・native/cross判定・別名の受付を検証し、独立例へ同じファイルを複製した。
+
+- [x] 配布の汎用処理と案件の成果物定義を分離する。
+  [MyImportStdInstall.cmake](../../cmake/MyImportStdInstall.cmake)には、moduleのexportと
+  package config生成と、配布形式・保存先・命名の採用値だけを残した。
+  [汎用配布関数](../../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake)へ
+  CPack設定生成・入力検証・SHA-256検証targetの登録を分離した。
+  [検証スクリプト](../../cmake/generic-build-infrastructure/VerifyPackageChecksums.cmake)も同じ場所に移した。
+  元案件と実行ファイルだけの独立例が、同じ汎用処理を使用する。
+
+- [x] プリセットに混在する再利用可能な接続と案件の採用値を整理する。
+  [案件別プリセット](../../cmake/presets/CMakeProjectPresets.json)には、
+  出力レイアウト・CPU要件・機能選択と、案件のキャッシュ変数への接続を残した。
+  toolchain参照と操作軸は汎用側へ移し、toolchainのパスは`${sourceDir}/cmake/toolchains/...`とした。
+  [ルートプリセット](../../CMakePresets.json)の環境別の組み合わせと公開構成は案件側に残すことで合意した。
+  軸名と既存の構成・操作・workflowは維持し、案件別軸なしでもconfigureできる。
+  当初の`${fileDir}`基準の参照はCMake本体では動作したが、CMake Tools 1.24.42が
+  継承先の場所を基準に展開したため、IDE経由のconfigureに失敗した。
+  このため、toolchainをソースルートの`cmake/toolchains`に置く標準配置へ変更した。
+  プリセットを別の場所へ配置したfixtureでも、この標準配置のtoolchainが選択されることを検証する。
+  修正後はCMake Tools経由のビルドと`my_import_std.preset_axes`が成功し、診断が解消した。
+
+- [x] workspaceの再利用箇所と案件の参照箇所を区別して説明する。
+  formatter・clangd・terminal・CMake Tools・launch設定と、表示フォルダー名・比較用フォルダー・
+  名前付き`${workspaceFolder:...}`参照が同じファイルにあった。
+  元workspaceのsource directory・compile databaseのコピー先・初期選択先は、
+  workspace本体に`${workspaceFolder}`基準で記述する。
+  これらを`.vscode/settings.json`へ移す方針は取り消した。
+  workspace本体と開発フローは残し、VS Codeが提供しないincludeの仕組みは追加しない。
+  再利用時の編集箇所はソース構成の説明と独立例のREADMEに記載した。
+
+例側で省くのは、元案件の独自module・その利用例・ライブラリのexportと、
+基盤自体を手直しするためのfixture・作業用資料である。
+汎用CMakeモジュール、汎用プリセット、すべてのtoolchain、
+formatter・clangd・フォルダー設定は内容を変更せず複製する。
+
+分離後の検証では、元案件のclang-cl Debug/Releaseで関連6テストずつが成功した。
+元案件と独立例の両方でZIP生成とSHA-256検証が成功し、独立例のDebug workflowも成功した。
+配布関数は独立fixtureで正常動作・変数スコープ・7種類の不正入力を検証した。
+Windows toolchainはnative/cross・processor別名・未指定・競合・不正値・ホスト条件、
+SDK toolchainは委譲と不足時の診断を確認した。
+元案件と独立例でclang++・MSVCのDebugビルドと実行テストも成功した。
+元案件のRelease install後、別のconsumerからexportしたmoduleを利用できることを確認した。
+既存188プリセットの実効設定をGit管理下の変更前と比較し、標準processor入力の追加と
+同じtoolchainを指すパス表現の変更を除いて一致した。
+Linux・AArch64・実SDKでのビルドとVS CodeのデバッガーUIは未検証。
 
 ## 利用者の好みと汎用処理の追加分離
 

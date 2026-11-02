@@ -42,6 +42,9 @@ SDKのC++ module・`import std`対応を保証するものではありません�
 
 workspaceではclangdの`--experimental-modules-support`を有効にしています。ルートの
 `.clangd`ではcompile databaseの場所を`./build`に指定し、`_CLANGD=1`を定義しています。
+CMake Toolsのsource directoryとcompile databaseのコピー先は、
+[ワークスペース設定](../my_cxx_generic_build_infrastructure.code-workspace)に`${workspaceFolder}`基準で記述しています。
+フォルダーの表示名を変えても、この接続を書き換える必要はありません。
 
 ## CMake設定
 
@@ -54,6 +57,7 @@ target定義はルートに残し、共通設定と配布設定を分離して�
 - [汎用ビルド基盤のtarget設定](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureTargets.cmake)：compiler設定、成果物・PDBの出力先、静的MSVCランタイムの適用。
 - [標的環境の処理](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePlatform.cmake)：architecture・CPU水準・実行環境の検証とCPUオプションの適用。
 - [計測処理](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureInstrumentation.cmake)：CMakeの計測登録とClangのtrace設定。
+- [配布処理](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake)：CPack設定生成とSHA-256検証targetの登録。
 - [プロジェクトtarget設定](../cmake/MyImportStdTargetSettings.cmake)：案件のCPU・architecture・計測設定を汎用関数へ渡す処理。
 - [install/export・CPack設定](../cmake/MyImportStdInstall.cmake)：このプロジェクトの配布仕様。
 - [toolchain](../cmake/toolchains/)：native環境のcompiler選択と、SDK付属toolchainへの委譲。
@@ -97,6 +101,28 @@ architecture・CPU基準・AVX2・instrumentationの設定を加えます。
 `block(SCOPE_FOR VARIABLES DIAGNOSTICS)`で隔離し、CPack設定ファイルはそのblock内で
 生成します。SDKのinclude処理では変数スコープを作りません。
 
+### 配布処理の再利用
+
+install対象・export・バージョン互換性・配布形式・保存先・命名は案件側で定めます。
+汎用の配布関数は、必須入力と保存先を検証し、CPack設定とSHA-256検証targetを生成します。
+関数内の変数は呼び出し元に残りません。CPackの追加設定は呼び出し元から引き継ぎ、
+archiveのファイル名encodingだけは、指定がない場合にUTF-8を設定します。
+`CPACK_INCLUDE_TOPLEVEL_DIRECTORY`など、配布物の構成に関する選択は案件側に残します。
+
+```cmake
+include("${CMAKE_CURRENT_LIST_DIR}/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake")
+
+cmake_generic_build_infrastructure_enable_packaging(
+	GENERATORS ZIP
+	OUTPUT_DIRECTORY "${CPACK_PACKAGE_DIRECTORY}"
+	FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
+	CHECKSUM_TARGET verify-package-checksum
+)
+```
+
+`OUTPUT_DIRECTORY`は絶対パス、`FILE_NAME`はディレクトリを含まない名前、
+`CHECKSUM_TARGET`は未使用のtarget名です。SHA-256検証スクリプトも汎用モジュールと同梱します。
+
 ### オプション
 
 | 設定 | 既定値 | 動作 |
@@ -108,7 +134,7 @@ architecture・CPU基準・AVX2・instrumentationの設定を加えます。
 | `MY_IMPORT_STD_CPU_BASELINE` | 空 | `x86-64-v3`または`armv8.2-a`を指定。通常のnative presetはarchitecture別に設定 |
 | `MY_IMPORT_STD_TARGET_ENVIRONMENT` | 空 | `gnu`を指定するとLinux/glibcを要求。Linux presetで設定 |
 | `MY_IMPORT_STD_USE_STATIC_RUNTIME` | OFF | MSVC ABIの静的runtimeを使用 |
-| `MY_IMPORT_STD_ENABLE_PACKAGING` | OFF | ZIP生成とチェックサム検証targetを用意 |
+| `MY_IMPORT_STD_ENABLE_PACKAGING` | OFF | ZIP生成と検査合計検証targetを用意 |
 | `MY_IMPORT_STD_ENABLE_INSTRUMENTATION` | OFF | build・test・installの時間と出力をローカルに保存。Clangではcompiler time traceも取得 |
 
 AVX2を有効にした生成物にはAVX2対応CPUが必要です。実行時のCPU判定やfallbackはありません。
@@ -150,6 +176,19 @@ compiler・SDKを自動インストールするものではありません。Win
 architectureの指定からtoolchainが明示します。MSVCは選択済みcompilerの実targetを検証します。
 クロスビルドしたARM64の実行テストは、ARM64環境または別途設定したemulatorで行ってください。
 
+Windows toolchainは標準変数`CMAKE_SYSTEM_PROCESSOR`を入力とし、案件変数を参照しません。
+`x86_64`・`AMD64`・`x64`と、`aarch64`・`ARM64`を大文字小文字を区別せず受け入れます。
+指定がある場合はClangの`CMAKE_CXX_COMPILER_TARGET`を設定し、ホストと異なるarchitectureなら
+`CMAKE_SYSTEM_NAME`と`CMAKE_SYSTEM_PROCESSOR`をクロスビルド用に設定します。
+標的を指定しない場合はcompilerの既定値を使います。
+
+案件別の`target_arch:*`軸は、標的選択用の`CMAKE_SYSTEM_PROCESSOR`と、
+実targetの検証条件である`MY_IMPORT_STD_TARGET_ARCH`を一緒に設定します。
+**直接指定する場合の変更点：** `MY_IMPORT_STD_TARGET_ARCH`だけではcompilerの標的を選択しません。
+Windows toolchainで標的を選ぶ場合は`CMAKE_SYSTEM_PROCESSOR`も指定してください。
+既存のプリセットの選択方法と動作は変わりません。Linux nativeではarchitectureを選択する
+compiler環境を準備し、案件側の検証で一致を確認します。Linux cross buildを追加したわけではありません。
+
 Linuxでは`x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3`または`x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3`を使います。
 対応compiler・標準ライブラリと、module dependency scannerが必要です。
 Linux向けクロスビルドは今回の対象外です。
@@ -187,7 +226,7 @@ symlinkを解決した配置先・削除先の確認にはなりません。
 ### 検証
 
 CTestでmodule・アプリ・有効にしたexampleの実行、共通関数の入力検証、
-チェックサムの正常系・異常系、SDK委譲の変数スコープと不足時の診断を確認します。
+検査合計の正常系・異常系、SDK委譲の変数スコープと不足時の診断を確認します。
 SDK委譲のテストにはfixtureを使い、実SDKでのビルド成功を示すものではありません。
 共通関数のテストはnested configureを行うため、WindowsではCTestもdeveloper環境から
 実行してください。
@@ -199,8 +238,14 @@ SDK委譲のテストにはfixtureを使い、実SDKでのビルド成功を示�
 [通常のpreset](../CMakePresets.json)はプロジェクト共通設定と公開する構成を定義し、
 [汎用ビルド基盤の軸](../cmake/presets/CMakeGenericBuildInfrastructurePresets.json)と
 [プロジェクト軸](../cmake/presets/CMakeProjectPresets.json)をincludeしています。
-汎用ビルド基盤の軸にはプロジェクト変数やプロジェクト内のパスを含めず、別リポジトリからも直接includeできます。
-プロジェクト軸に置くのはtoolchainの場所、CPU要件、機能選択、短い出力先です。
+汎用ビルド基盤の軸には案件固有の変数やパスを含めません。
+汎用の`system:*`軸は`${sourceDir}/cmake/toolchains/...`で同梱toolchainを参照します。
+再利用先でもtoolchainはソースルートの`cmake/toolchains`に配置してください。
+CMake Tools 1.24.42では、継承した`${fileDir}`が定義元ではなく継承先のプリセットの場所を
+基準に展開されるため、この参照には`${fileDir}`を使いません。
+install・検査合計検証・test/install準備targetの操作軸も汎用側に置きます。
+プロジェクト軸に置くのはCPU要件、標的の選択と検証条件への接続、機能選択、短い出力先です。
+環境別の組み合わせと、その案件でどの構成を公開するかは引き続きルート側で決めます。
 ホスト・target/toolchain・generator・compiler・linker・機能・診断・操作をhidden presetに分け、
 公開presetの`inherits`で組み合わせます。preset名は以下の命名規約へ変更しています。
 

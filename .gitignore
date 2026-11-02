@@ -15,6 +15,7 @@
 !/.vscode/**
 # /build/
 !/cmake/**
+# /dist/
 !/examples/**
 !/include/**
 # /install/

@@ -74,6 +74,7 @@ file(WRITE "${fixture_source}/CMakeLists.txt" [=[
 cmake_minimum_required(VERSION 4.5)
 project(FeatureFixture LANGUAGES NONE)
 include("${INSTRUMENTATION_MODULE}")
+include("${PACKAGING_MODULE}")
 cmake_generic_build_infrastructure_enable_instrumentation(
 	OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/instrumentation"
 )
@@ -81,17 +82,23 @@ enable_testing()
 add_test(NAME tracked COMMAND "${CMAKE_COMMAND}" -E true
 	BUILD_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/input.txt")
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/日本語 sample.txt" DESTINATION share)
-set(CPACK_GENERATOR ZIP)
-set(CPACK_PACKAGE_FILE_NAME fixture)
-set(CPACK_ARCHIVE_ENCODING UTF-8)
 set(CPACK_ARCHIVE_COMPRESSION_LEVEL 6)
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-include(CPack)
+cmake_generic_build_infrastructure_enable_packaging(
+	GENERATORS ZIP
+	OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+	FILE_NAME fixture
+	CHECKSUM_TARGET verify-fixture-checksum
+)
+if(DEFINED CPACK_PACKAGE_FILE_NAME OR DEFINED CPACK_PACKAGE_CHECKSUM OR DEFINED arg_OUTPUT_DIRECTORY)
+	message(FATAL_ERROR "配布関数の一時変数が外部に漏れています")
+endif()
 ]=])
 
 execute_process(
 	COMMAND "${CMAKE_COMMAND}" -S "${fixture_source}" -B "${fixture_binary}" -G Ninja
 		"-DINSTRUMENTATION_MODULE=${CMAKE_CURRENT_LIST_DIR}/../../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureInstrumentation.cmake"
+		"-DPACKAGING_MODULE=${CMAKE_CURRENT_LIST_DIR}/../../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake"
 	ENVIRONMENT "CMAKE_SYSTEM_ENVIRONMENT_ID=fixture-environment-1"
 	ENVIRONMENT_MODIFICATION "CMAKE_SYSTEM_ENVIRONMENT_ACTION=unset:"
 	COMMAND_ERROR_IS_FATAL ANY
@@ -141,6 +148,11 @@ execute_process(
 	COMMAND "${cpack_command}" --config "${fixture_binary}/CPackConfig.cmake" -B "${fixture_binary}"
 	COMMAND_ERROR_IS_FATAL ANY
 )
+execute_process(
+	ENCODING UTF-8
+	COMMAND "${CMAKE_COMMAND}" --build "${fixture_binary}" --target verify-fixture-checksum
+	COMMAND_ERROR_IS_FATAL ANY
+)
 file(ARCHIVE_EXTRACT INPUT "${fixture_binary}/fixture.zip" DESTINATION "${fixture_binary}/extracted")
 file(READ "${fixture_binary}/extracted/share/日本語 sample.txt" content)
 if(NOT content STREQUAL "UTF-8 archive entry\n")
@@ -165,3 +177,52 @@ foreach(index_path IN LISTS indexes)
 	endforeach()
 endforeach()
 message(STATUS "準備処理、差分テスト、環境識別子、UTF-8 ZIP、Instrumentationデータの保持を確認しました")
+
+set(packaging_source "${CHECK_BINARY_DIR}/packaging-inputs")
+file(MAKE_DIRECTORY "${packaging_source}")
+file(WRITE "${packaging_source}/CMakeLists.txt" [=[
+cmake_minimum_required(VERSION 4.5)
+project(PackagingInputs LANGUAGES NONE)
+include("${PACKAGING_MODULE}")
+set(arguments GENERATORS ZIP OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+	FILE_NAME fixture CHECKSUM_TARGET verify-checksum)
+if(CASE STREQUAL "relative")
+	set(arguments GENERATORS ZIP OUTPUT_DIRECTORY relative FILE_NAME fixture CHECKSUM_TARGET verify-checksum)
+elseif(CASE STREQUAL "filename")
+	set(arguments GENERATORS ZIP OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+		FILE_NAME "../fixture" CHECKSUM_TARGET verify-checksum)
+elseif(CASE STREQUAL "missing")
+	set(arguments GENERATORS ZIP OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" FILE_NAME)
+elseif(CASE STREQUAL "unknown")
+	list(APPEND arguments UNKNOWN OFF)
+elseif(CASE STREQUAL "duplicate")
+	add_custom_target(verify-checksum)
+elseif(CASE STREQUAL "target")
+	set(arguments GENERATORS ZIP OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+		FILE_NAME fixture CHECKSUM_TARGET "bad::target")
+elseif(CASE STREQUAL "generator")
+	set(arguments OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" FILE_NAME fixture CHECKSUM_TARGET verify-checksum)
+endif()
+cmake_generic_build_infrastructure_enable_packaging(${arguments})
+]=])
+foreach(case IN ITEMS relative filename missing unknown duplicate target generator)
+	execute_process(
+		ENCODING UTF-8
+		COMMAND "${CMAKE_COMMAND}" -S "${packaging_source}" -B "${CHECK_BINARY_DIR}/packaging-${case}" -G Ninja
+			"-DCASE=${case}"
+			"-DPACKAGING_MODULE=${CMAKE_CURRENT_LIST_DIR}/../../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake"
+		RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error
+	)
+	string(REGEX REPLACE "[ \t\r\n]+" " " diagnostic "${output}\n${error}")
+	if(case STREQUAL "filename")
+		set(expected "FILE_NAMEにはディレクトリを含まない配布物の名前")
+	elseif(case MATCHES "^(duplicate|target)$")
+		set(expected "CHECKSUM_TARGETには未使用の有効なターゲット名")
+	else()
+		set(expected "絶対パスのOUTPUT_DIRECTORY、FILE_NAME、CHECKSUM_TARGET、GENERATORS")
+	endif()
+	if(result EQUAL 0 OR NOT diagnostic MATCHES "${expected}")
+		message(FATAL_ERROR "配布設定 ${case}：想定した入力エラーになりませんでした：\n${output}\n${error}")
+	endif()
+endforeach()
+message(STATUS "配布関数の入力検証を確認しました")

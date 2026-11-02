@@ -15,7 +15,7 @@ foreach(checksum_file IN LISTS checksum_files)
 	string(STRIP "${checksum_line}" checksum_line)
 	string(REGEX MATCH "^([0-9A-Fa-f]+)[ \t]+[*]?(.+)$" matched "${checksum_line}")
 	if(NOT matched)
-		message(FATAL_ERROR "チェックサムファイルの形式が正しくありません：${checksum_file}")
+		message(FATAL_ERROR "検査合計ファイルの形式が正しくありません：${checksum_file}")
 	endif()
 
 	set(expected_hash "${CMAKE_MATCH_1}")
@@ -33,7 +33,7 @@ foreach(checksum_file IN LISTS checksum_files)
 
 	file(SHA256 "${package_file}" actual_hash)
 	if(NOT actual_hash STREQUAL expected_hash)
-		message(FATAL_ERROR "チェックサムが一致しません：${package_file}")
+		message(FATAL_ERROR "検査合計が一致しません：${package_file}")
 	endif()
 
 	message(STATUS "検証しました：${package_file}")
