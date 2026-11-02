@@ -1,0 +1,9 @@
+[core]
+	autocrlf = input
+	checkStat = minimal
+	fileMode = true
+	ignorecase = false
+	longpaths = true
+	quotepath = false
+	safecrlf = true
+	symlinks = true
