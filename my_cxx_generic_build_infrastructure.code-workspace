@@ -2,7 +2,11 @@
 	"folders": [
 		{
 			"path": ".",
-			"name": "🧪C++モジュール使用概念実証"
+			"name": "⚙️C++汎用開発基盤作り"
+		},
+		{
+			"path": "../my_cxx_development_proof_of_concept_practice",
+			"name": "🧪C++開発の概念実証実践"
 		},
 		{
 			"path": "../TechDemoGame"
@@ -71,7 +75,7 @@
 		"cmake.allowUnsupportedPresetsVersions": true,
 		"cmake.autoSelectActiveFolder": false,
 		"cmake.cmakeCommunicationMode": "fileApi",
-		"cmake.copyCompileCommands": "${workspaceFolder:🧪C++モジュール使用概念実証}/build/compile_commands.json",
+		"cmake.copyCompileCommands": "${workspaceFolder:⚙️C++汎用開発基盤作り}/build/compile_commands.json",
 		"cmake.debugConfig": {
 			"name": "cmake.debugConfig",
 			"type": "cppvsdbg",
@@ -112,9 +116,9 @@
 		"cmake.outputLogEncoding": "UTF-8",
 		"cmake.revealLog": "error",
 		"cmake.sourceDirectory": [
-			"${workspaceFolder:🧪C++モジュール使用概念実証}"
+			"${workspaceFolder:⚙️C++汎用開発基盤作り}"
 		],
-		"cmake.defaultActiveFolder": "${workspaceFolder:🧪C++モジュール使用概念実証}",
+		"cmake.defaultActiveFolder": "${workspaceFolder:⚙️C++汎用開発基盤作り}",
 		"cmake.enabledOutputParsers": [
 			"cmake"
 		],
