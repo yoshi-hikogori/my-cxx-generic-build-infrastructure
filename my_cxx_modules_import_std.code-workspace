@@ -1,0 +1,177 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"name": "🧪C++モジュール使用概念実証"
+		},
+		{
+			"path": "../TechDemoGame"
+		}
+	],
+	"settings": {
+		"[c][cpp]": {
+			"editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+			"editor.formatOnSave": true,
+			"editor.formatOnPaste": true,
+			"editor.formatOnType": true
+		},
+		"files.encoding": "utf8",
+		"files.eol": "\n",
+		"json.schemaDownload.trustedDomains": {
+			"https://schemastore.azurewebsites.net/": true,
+			"https://raw.githubusercontent.com/microsoft/vscode/": true,
+			"https://raw.githubusercontent.com/devcontainers/spec/": true,
+			"https://www.schemastore.org/": true,
+			"https://json.schemastore.org/": true,
+			"https://spec.openapis.org/": true,
+			"https://json-schema.org/": true,
+			"https://developer.microsoft.com/json-schemas/": true,
+			
+			"https://gitlab.kitware.com/cmake/cmake/": true,
+		},
+		"terminal.integrated.automationProfile.windows": {
+			"path": "pwsh.exe",
+			"icon": "terminal-powershell",
+			"args": [
+				"-NoExit",
+				"-NoLogo",
+				"-NonInteractive",
+				"-NoProfile",
+				"-NoProfileLoadTime",
+				"-Command",
+				"[System.Console]::InputEncoding = $global:OutputEncoding = [System.Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false, $true);"
+			]
+		},
+		"terminal.integrated.defaultProfile.windows": "PowerShell",
+		"terminal.integrated.profiles.windows": {
+			"PowerShell": {
+				"source": "PowerShell",
+				"icon": "terminal-powershell",
+				"args": [
+					"-NoExit",
+					"-NoLogo",
+					// "-NoProfile",
+					// "-NoProfileLoadTime",
+					"-Command",
+					"[System.Console]::InputEncoding = $global:OutputEncoding = [System.Text.UTF8Encoding]::new($false, $true);"
+				]
+			},
+			"Command Prompt": null,
+			"Git Bash": null,
+			"JavaScript Debug Terminal": null,
+			"Ubuntu-22.04 (WSL)": null,
+			"Ubuntu-24.04 (WSL)": null
+		},
+		"terminal.integrated.useWslProfiles": false,
+		"C_Cpp.intelliSenseEngine": "disabled",
+		"clangd.arguments": [
+			"--experimental-modules-support"
+		],
+		"cmake.allowCommentsInPresetsFile": false,
+		"cmake.allowUnsupportedPresetsVersions": true,
+		"cmake.autoSelectActiveFolder": false,
+		"cmake.cmakeCommunicationMode": "fileApi",
+		"cmake.copyCompileCommands": "${workspaceFolder:🧪C++モジュール使用概念実証}/build/compile_commands.json",
+		"cmake.debugConfig": {
+			"name": "cmake.debugConfig",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "${command:cmake.launchTargetPath}",
+			"console": "integratedTerminal",
+			"logging": {
+				"exceptions": true,
+				"moduleLoad": true,
+				"programOutput": true,
+				"engineLogging": true,
+				"threadExit": true,
+				"processExit": true
+			},
+			"args": [],
+			"cwd": "${command:cmake.launchTargetDirectory}"
+		},
+		"cmake.options.advanced": {
+			"configure": { "projectStatusVisibility": "visible" },
+			"configurePreset": { "statusBarVisibility": "compact" },
+			"buildPreset": { "statusBarVisibility": "compact" },
+			"testPreset": { "statusBarVisibility": "hidden" },
+			"packagePreset": { "statusBarVisibility": "hidden" },
+			"workflowPreset": { "statusBarVisibility": "hidden" },
+			"kit": { "statusBarVisibility": "visible" },
+			"variant": { "statusBarVisibility": "compact" },
+			"folder": { "statusBarVisibility": "compact", "projectStatusVisibility": "visible" },
+			"buildTarget": { "statusBarVisibility": "compact" },
+			"build": { "statusBarVisibility": "visible", "projectStatusVisibility": "visible" },
+			"launchTarget": { "statusBarVisibility": "visible" },
+			"debug": { "statusBarVisibility": "hidden", "projectStatusVisibility": "visible" },
+			"launch": { "statusBarVisibility": "hidden", "projectStatusVisibility": "visible" },
+			"ctest": { "statusBarVisibility": "hidden", "color": true, "projectStatusVisibility": "visible" },
+			"cpack": { "statusBarVisibility": "hidden", "color": true, "projectStatusVisibility": "visible" },
+			"workflow": { "statusBarVisibility": "hidden", "color": true, "projectStatusVisibility": "visible" }
+		},
+		"cmake.options.statusBarVisibility": "compact",
+		"cmake.outputLogEncoding": "UTF-8",
+		"cmake.revealLog": "error",
+		"cmake.sourceDirectory": [
+			"${workspaceFolder:🧪C++モジュール使用概念実証}"
+		],
+		"cmake.defaultActiveFolder": "${workspaceFolder:🧪C++モジュール使用概念実証}",
+		"cmake.enabledOutputParsers": [
+			"cmake"
+		],
+		"cmake.useCMakePresets": "always",
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"program": "${command:cmake.launchTargetPath}",
+				"cwd": "${command:cmake.launchTargetDirectory}",
+				"console": "integratedTerminal",
+				"logging": {
+					"exceptions": true,
+					"moduleLoad": true,
+					"programOutput": true,
+					"engineLogging": true,
+					"threadExit": true,
+					"processExit": true
+				},
+				"type": "cppvsdbg",
+				"request": "launch",
+				"name": "🐞C++アプリケーションをデバッグ実行",
+				"presentation": {
+					"hidden": false,
+					"group": "🧑‍💻開発",
+					"order": 1
+				}
+			}
+		],
+		"compounds": [],
+		"inputs": []
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"problemMatcher": [],
+		"tasks": [],
+		"inputs": []
+	},
+	"extensions": {
+		"recommendations": [
+			"eamodio.gitlens",
+			"github.vscode-pull-request-github",
+			"llvm-vs-code-extensions.vscode-clangd",
+			"mhutchie.git-graph",
+			"ms-vscode.cmake-tools",
+			"ms-vscode.cpptools",
+			"ms-vsliveshare.vsliveshare"
+		],
+		"unwantedRecommendations": [
+			"DavidAnson.vscode-markdownlint",
+			"GitHub.copilot",
+			"firefox-devtools.vscode-firefox-debug",
+			"ms-dotnettools.csdevkit",
+			"ms-vscode-remote.remote-wsl",
+			"ms-windows-ai-studio.windows-ai-studio"
+		]
+	},
+	"transient": false
+}

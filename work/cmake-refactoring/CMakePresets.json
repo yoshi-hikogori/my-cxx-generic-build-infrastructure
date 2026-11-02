@@ -1,0 +1,129 @@
+{
+	"version": 13,
+	"cmakeMinimumRequired": { "major": 4, "minor": 5, "patch": 0 },
+	"include": ["${fileDir}/../../CMakePresets.json"],
+	"configurePresets": [
+		{
+			"name": "layout:validation_clang_cl",
+			"hidden": true,
+			"description": "clang-cl検証構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/cmake-features/feature-clangcl",
+			"installDir": "${sourceDir}/install/cmake-features/feature-clangcl",
+			"cacheVariables": { "CPACK_PACKAGE_DIRECTORY": "${sourceDir}/build/cmake-features/feature-clangcl/packages" }
+		},
+		{
+			"name": "layout:validation_clang",
+			"hidden": true,
+			"description": "clang++検証構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/cmake-features/feature-clang",
+			"installDir": "${sourceDir}/install/cmake-features/feature-clang",
+			"cacheVariables": { "CPACK_PACKAGE_DIRECTORY": "${sourceDir}/build/cmake-features/feature-clang/packages" }
+		},
+		{
+			"name": "layout:validation_cl",
+			"hidden": true,
+			"description": "cl検証構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/cmake-features/feature-cl",
+			"installDir": "${sourceDir}/install/cmake-features/feature-cl",
+			"cacheVariables": { "CPACK_PACKAGE_DIRECTORY": "${sourceDir}/build/cmake-features/feature-cl/packages" }
+		},
+		{
+			"name": "layout:instrumentation_clang_cl",
+			"hidden": true,
+			"description": "clang-cl計測構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/cmake-features/profile-clangcl",
+			"installDir": "${sourceDir}/install/cmake-features/profile-clangcl",
+			"cacheVariables": { "CPACK_PACKAGE_DIRECTORY": "${sourceDir}/build/cmake-features/profile-clangcl/packages" }
+		},
+		{
+			"name": "layout:instrumentation_clang",
+			"hidden": true,
+			"description": "clang++計測構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/cmake-features/profile-clang",
+			"installDir": "${sourceDir}/install/cmake-features/profile-clang",
+			"cacheVariables": { "CPACK_PACKAGE_DIRECTORY": "${sourceDir}/build/cmake-features/profile-clang/packages" }
+		},
+		{
+			"name": "bundle:validation",
+			"hidden": true,
+			"inherits": ["diagnostics:Strict_warnings", "debug:Quiet", "trace:Off", "feature:Examples", "feature:Packaging", "bundle:development"],
+			"description": "examples・テスト・配布物生成を有効にする検証構成の共通設定",
+			"binaryDir": "${sourceDir}/build/cmake-features/${configurePresetName}",
+			"installDir": "${sourceDir}/install/cmake-features/${configurePresetName}",
+			"cacheVariables": {
+				"BUILD_TESTING": true,
+				"CPACK_PACKAGE_DIRECTORY": "${sourceDir}/build/cmake-features/${configurePresetName}/packages",
+				"CPACK_ARCHIVE_COMPRESSION_LEVEL": "6"
+			}
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation",
+			"inherits": ["layout:validation_clang_cl", "bundle:validation", "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3"],
+			"description": "clang-clとlld-linkを用いる検証構成"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-validation",
+			"inherits": ["layout:validation_clang", "feature:PCH_off", "bundle:validation", "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3"],
+			"description": "MSVCツールセット上のclang++とlld-linkを用い、PCHを無効にする検証構成"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-validation",
+			"inherits": ["layout:validation_cl", "feature:PCH_off", "feature:Static_runtime", "bundle:validation", "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3"],
+			"description": "MSVC cl.exeと静的runtimeを用い、PCHを無効にする検証構成"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation-instrumentation",
+			"inherits": ["layout:instrumentation_clang_cl", "feature:Instrumentation", "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation"],
+			"description": "clang-clを用いた構築のローカル計測構成"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-validation-instrumentation",
+			"inherits": ["layout:instrumentation_clang", "feature:Instrumentation", "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-validation"],
+			"description": "MSVCツールセット上のclang++を用いた構築のローカル計測構成"
+		}
+	],
+	"buildPresets": [
+		{ "name": "build-prepare-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation", "inherits": ["build-prepare-operation:Test", "build-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug"], "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "build-prepare-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation", "inherits": ["build-prepare-operation:Test_and_install", "build-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release"], "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "build-prepare-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation", "inherits": ["build-prepare-operation:Test", "build-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug"], "configurePreset": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "build-prepare-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation", "inherits": ["build-prepare-operation:Test_and_install", "build-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Release"], "configurePreset": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "build-prepare-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Debug-validation", "inherits": ["build-prepare-operation:Test", "build-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Debug"], "configurePreset": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "build-prepare-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Release-validation", "inherits": ["build-prepare-operation:Test_and_install", "build-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Release"], "configurePreset": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "build-prepare-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation-instrumentation", "inherits": "build-prepare-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation", "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation-instrumentation" },
+		{ "name": "build-prepare-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation-instrumentation", "inherits": "build-prepare-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation", "configurePreset": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-validation-instrumentation" },
+		{ "name": "verify-checksum-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation", "inherits": ["build-build_type:Release", "verify-checksum-operation:Default"], "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation" }
+	],
+	"testPresets": [
+		{ "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation", "inherits": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug", "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation", "inherits": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release", "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation", "inherits": "test-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug", "configurePreset": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation", "inherits": "test-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Release", "configurePreset": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "test-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Debug-validation", "inherits": "test-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Debug", "configurePreset": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "test-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Release-validation", "inherits": "test-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Release", "configurePreset": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-validation" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation-instrumentation", "inherits": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation", "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation-instrumentation" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation-instrumentation", "inherits": "test-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation", "configurePreset": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-validation-instrumentation" }
+	],
+	"packagePresets": [
+		{ "name": "package-ZIP-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation", "inherits": "package-ZIP-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release", "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation" }
+	],
+	"workflowPresets": [
+		{
+			"name": "validation-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-examples",
+			"steps": [
+				{ "type": "configure", "name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+				{ "type": "build", "name": "build-prepare-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation" },
+				{ "type": "test", "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-validation" }
+			]
+		},
+		{
+			"name": "distribution-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation",
+			"steps": [
+				{ "type": "configure", "name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-validation" },
+				{ "type": "build", "name": "build-prepare-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation" },
+				{ "type": "test", "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation" },
+				{ "type": "package", "name": "package-ZIP-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation" },
+				{ "type": "build", "name": "verify-checksum-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-validation" }
+			]
+		}
+	]
+}

@@ -1,0 +1,391 @@
+{
+	"$schema": "https://gitlab.kitware.com/cmake/cmake/-/raw/master/Help/manual/presets/schema.json",
+	"version": 13,
+	"cmakeMinimumRequired": { "major": 4, "minor": 5, "patch": 0 },
+	"include": [
+		"cmake/presets/CMakeGenericBuildInfrastructurePresets.json",
+		"cmake/presets/CMakeProjectPresets.json"
+	],
+	"vendor": {},
+	"configurePresets": [
+		{
+			"$comment": ["CMAKE_EXPERIMENTAL_CXX_IMPORT_STDとCMAKE_CXX_MODULE_STDはCMake 4.5.0で削除済み",
+			""],
+			"name": "bundle:development",
+			"hidden": true,
+			"inherits": ["base:project", "diagnostics:Developer"],
+			"description": "すべての構成で共通する基本設定"
+		},
+		{
+			"name": "base:project",
+			"hidden": true,
+			"description": "言語方針・機能の既定値・出力先を定めるプロジェクトの共通設定",
+			"binaryDir": "${sourceDir}/build/${presetName}",
+			"installDir": "${sourceDir}/install/${presetName}",
+			"cacheVariables": {
+				"CMAKE_CXX_EXTENSIONS": { "type": "BOOL", "value": "OFF" },
+				"CMAKE_CXX_STANDARD": "23",
+				"CMAKE_CXX_STANDARD_REQUIRED": { "type": "BOOL", "value": "ON" },
+				"CMAKE_EXPORT_COMPILE_COMMANDS": { "type": "BOOL", "value": "ON" },
+				"CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE": { "type": "BOOL", "value": "ON" },
+				"MY_IMPORT_STD_ENABLE_PCH": { "type": "BOOL", "value": "ON" },
+				"MY_IMPORT_STD_ENABLE_AVX2": { "type": "BOOL", "value": "OFF" },
+				"MY_IMPORT_STD_BUILD_EXAMPLES": { "type": "BOOL", "value": "OFF" },
+				"MY_IMPORT_STD_USE_STATIC_RUNTIME": { "type": "BOOL", "value": "OFF" },
+				"MY_IMPORT_STD_ENABLE_PACKAGING": { "type": "BOOL", "value": "OFF" }
+			},
+			"environment": {}
+		},
+		{
+			"$comment": ["", ""],
+			"name": "bundle:development-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["bundle:development", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)"],
+			"displayName": "Base (Ninja Multi-Config, common options)",
+			"description": "Ninja Multi-Config生成器を用いた構成の基本設定"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3",
+			"inherits": ["layout:Windows_clang_cl", "target_arch:x86_64", "cpu_type:x86_64_v3(target_arch:x86_64)", "architecture:x64(strategy:external)", "bundle:development-Ninja_Multi_Config", "host:Windows", "system:Windows(host:Windows)", "compiler:clang_cl", "linker:LLD"],
+			"displayName": "Ninja Multi-Config (clang-cl + lld-link)",
+			"description": "clang-clとlldを用いた構築の構成"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3",
+			"inherits": ["layout:Windows_clang", "target_arch:x86_64", "cpu_type:x86_64_v3(target_arch:x86_64)", "architecture:x64(strategy:external)", "bundle:development-Ninja_Multi_Config", "host:Windows", "system:Windows(host:Windows)", "compiler:clang++(system:Windows)", "linker:LLD"],
+			"displayName": "Ninja Multi-Config (clang++ + lld-link)",
+			"description": "MSVCツールセット上でclangのGNU風フロントエンドとlld-linkを用いた構築の構成"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3",
+			"inherits": ["layout:Windows_cl", "target_arch:x86_64", "cpu_type:x86_64_v3(target_arch:x86_64)", "architecture:x64(strategy:external)", "bundle:development-Ninja_Multi_Config", "host:Windows", "system:Windows(host:Windows)", "compiler:cl"],
+			"displayName": "Ninja Multi-Config (MSVC cl.exe)",
+			"description": "MSVC cl.exeとlink.exeを用いた構築の構成"
+		},
+		{
+			"$comment": ["無効化済み。4.5.0現在の版のCMakeでは、import std; およびインストール済みモジュールのエクスポートにはNinjaが必要", ""],
+			"name": "x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3",
+			"inherits": ["layout:Windows_Visual_Studio", "target_arch:x86_64", "cpu_type:x86_64_v3(target_arch:x86_64)", "bundle:development", "host:Windows", "generator:Visual_Studio_18_2026", "build_types:Debug_Release_RelWithDebInfo", "architecture:x64(strategy:external)", "toolset:version(strategy:external)"],
+			"condition": false,
+			"displayName": "Visual Studio 18 2026 (MSVC cl.exe, x64)",
+			"description": "Visual Studio generatorとMSVC cl.exeを用いた構築の構成",
+			"cacheVariables": {
+			}
+		},
+		{
+			"name": "x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3",
+			"inherits": ["layout:Linux_clang", "target_arch:x86_64", "cpu_type:x86_64_v3(target_arch:x86_64)", "target_environment:GNU(system:Linux)", "bundle:development-Ninja_Multi_Config", "host:Linux", "system:Linux(host:Linux)", "compiler:clang++(system:Linux)"],
+			"displayName": "Linux native (Clang, Ninja Multi-Config)",
+			"description": "Linuxのnative環境でClangとNinja Multi-Config生成器を用いた構築の構成"
+		},
+		{
+			"name": "x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3",
+			"inherits": ["layout:Linux_gcc", "target_arch:x86_64", "cpu_type:x86_64_v3(target_arch:x86_64)", "target_environment:GNU(system:Linux)", "bundle:development-Ninja_Multi_Config", "host:Linux", "system:Linux(host:Linux)", "compiler:g++"],
+			"displayName": "Linux native (GCC, Ninja Multi-Config)",
+			"description": "Linuxのnative環境でGCCとNinja Multi-Config生成器を用いた構築の構成"
+		},
+		{
+			"name": "aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Armv8.2_A",
+			"inherits": ["layout:Windows_ARM64_clang_cl", "target_arch:aarch64", "cpu_type:Armv8.2_A(target_arch:aarch64)", "architecture:ARM64(strategy:external)", "bundle:development-Ninja_Multi_Config", "host:Windows", "system:Windows(host:Windows)", "compiler:clang_cl", "linker:LLD"],
+			"displayName": "Windows ARM64 (clang-cl, Armv8.2-A)",
+			"description": "Windows ARM64環境でclang-clとlld-linkを用いた構築の構成。ARM64用の開発環境が必要で、実ビルドは未検証"
+		},
+		{
+			"name": "aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-Armv8.2_A",
+			"inherits": ["layout:Windows_ARM64_clang", "target_arch:aarch64", "cpu_type:Armv8.2_A(target_arch:aarch64)", "architecture:ARM64(strategy:external)", "bundle:development-Ninja_Multi_Config", "host:Windows", "system:Windows(host:Windows)", "compiler:clang++(system:Windows)", "linker:LLD"],
+			"displayName": "Windows ARM64 (clang++, Armv8.2-A)",
+			"description": "Windows ARM64環境でclang++とlld-linkを用いた構築の構成。ARM64用の開発環境が必要で、実ビルドは未検証"
+		},
+		{
+			"name": "aarch64-pc-windows-msvc-cl-Ninja_Multi_Config-Armv8.2_A",
+			"inherits": ["layout:Windows_ARM64_cl", "target_arch:aarch64", "cpu_type:Armv8.2_A(target_arch:aarch64)", "architecture:ARM64(strategy:external)", "bundle:development-Ninja_Multi_Config", "host:Windows", "system:Windows(host:Windows)", "compiler:cl"],
+			"displayName": "Windows ARM64 (MSVC, Armv8.2-A)",
+			"description": "Windows ARM64環境でMSVC cl.exeを用いた構築の構成。ARM64用の開発環境が必要で、実ビルドは未検証"
+		},
+		{
+			"name": "aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A",
+			"inherits": ["layout:Linux_AArch64_clang", "target_arch:aarch64", "cpu_type:Armv8.2_A(target_arch:aarch64)", "target_environment:GNU(system:Linux)", "bundle:development-Ninja_Multi_Config", "host:Linux", "system:Linux(host:Linux)", "compiler:clang++(system:Linux)"],
+			"displayName": "Linux AArch64 (Clang, Armv8.2-A)",
+			"description": "LinuxのAArch64・GNU/glibc環境でClangを用いた構築の構成。実ビルドは未検証"
+		},
+		{
+			"name": "aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A",
+			"inherits": ["layout:Linux_AArch64_gcc", "target_arch:aarch64", "cpu_type:Armv8.2_A(target_arch:aarch64)", "target_environment:GNU(system:Linux)", "bundle:development-Ninja_Multi_Config", "host:Linux", "system:Linux(host:Linux)", "compiler:g++"],
+			"displayName": "Linux AArch64 (GCC, Armv8.2-A)",
+			"description": "LinuxのAArch64・GNU/glibc環境でGCCを用いた構築の構成。実ビルドは未検証"
+		},
+		{
+			"name": "*-*-emscripten-*-Emscripten_sdk-Ninja-Debug",
+			"inherits": ["layout:Emscripten", "feature:IPO_off(build_type:Release)", "bundle:development", "generator:Ninja", "build_type:Debug(generator:single_config)", "system:Emscripten"],
+			"displayName": "Experimental Emscripten SDK (Ninja)",
+			"description": "Emscripten SDKとNinja生成器を用いた実験的な構築の構成。C++ modulesとimport stdに対応するSDKが必要で、実ビルドは未検証"
+		},
+		{
+			"name": "*-*-*-*-WASI_sdk-Ninja-Debug",
+			"inherits": ["layout:WASI", "feature:IPO_off(build_type:Release)", "bundle:development", "generator:Ninja", "build_type:Debug(generator:single_config)", "system:WASI"],
+			"displayName": "Experimental WASI SDK (Ninja)",
+			"description": "WASI SDKとNinja生成器を用いた実験的な構築の構成。C++ modulesとimport stdに対応するSDKが必要で、実ビルドは未検証"
+		},
+		{
+			"$comment": ["clang-clのDebug構成向け。compilerと構成の制約を含む機能設定"],
+			"name": "bundle:ASan-clang_cl-Debug",
+			"hidden": true,
+			"inherits": ["feature:ASan(compiler:clang_cl,build_type:Debug)", "build_types:Debug", "default_build_type:Debug(generator:Ninja_Multi_Config)"],
+			"description": "clang-clのDebug構成でAddressSanitizerを有効にする設定"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-ASan",
+			"hidden": true,
+			"inherits": ["layout:Windows_ASan", "bundle:ASan-clang_cl-Debug", "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3"],
+			"displayName": "Ninja Multi-Config (clang-cl + ASan, Debug)",
+			"description": "DebugでAddressSanitizerを有効化"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-static_runtime",
+			"inherits": ["layout:Windows_static_runtime", "feature:Static_runtime", "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3"],
+			"displayName": "Ninja Multi-Config (clang-cl + static runtime)",
+			"description": "必要な場合だけ静的MSVCランタイムを有効化"
+		},
+		{
+			"name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-packaging",
+			"inherits": ["layout:Windows_packaging", "feature:Packaging", "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3"],
+			"displayName": "Ninja Multi-Config (clang-cl + packaging)",
+			"description": "CPackによる配布物生成を有効化"
+		}
+	],
+	"buildPresets": [
+		{ "name": "build-aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "build-build_type:Debug", "configurePreset": "aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "build-build_type:Release", "configurePreset": "aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "build-build_type:Debug", "configurePreset": "aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "build-build_type:Release", "configurePreset": "aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-aarch64-pc-windows-msvc-cl-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "build-build_type:Debug", "configurePreset": "aarch64-pc-windows-msvc-cl-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-aarch64-pc-windows-msvc-cl-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "build-build_type:Release", "configurePreset": "aarch64-pc-windows-msvc-cl-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "build-build_type:Debug", "configurePreset": "aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "build-build_type:Release", "configurePreset": "aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "build-build_type:Debug", "configurePreset": "aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "build-build_type:Release", "configurePreset": "aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "build-x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3-Debug", "inherits": "build-build_type:Debug", "configurePreset": "x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "build-x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3-Release", "inherits": "build-build_type:Release", "configurePreset": "x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "build-x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3-Debug", "inherits": "build-build_type:Debug", "configurePreset": "x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "build-x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3-Release", "inherits": "build-build_type:Release", "configurePreset": "x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3" },
+		{
+			"name": "build-bundle:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3",
+			"hidden": true,
+			"displayName": "Build (Ninja Multi-Config, clang-cl)",
+			"description": "Ninja Multi-Config生成器とclang-clを用いる構築の基本設定",
+			"configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3",
+			"nativeToolOptions": []
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug",
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3", "build-build_type:Debug"],
+			"displayName": "Debug Build (Ninja Multi-Config, clang-cl)",
+			"description": "Ninja Multi-Configによる生成からclang-cl・lld-linkを使い、Debug構成で構築する"
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-RelWithDebInfo",
+			"hidden": true,
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3", "build-build_type:RelWithDebInfo"],
+			"displayName": "RelWithDebInfo Build (Ninja Multi-Config, clang-cl)",
+			"description": "Ninja Multi-Configによる生成からclang-cl・lld-linkを使い、RelWithDebInfo構成で構築する"
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release",
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3", "build-build_type:Release"],
+			"displayName": "Release Build (Ninja Multi-Config, clang-cl)",
+			"description": "Ninja Multi-Configによる生成からclang-cl・lld-linkを使い、Release構成で構築する"
+		},
+		{
+			"name": "build-bundle:x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3",
+			"hidden": true,
+			"displayName": "Build (Ninja Multi-Config, clang++)",
+			"description": "Ninja Multi-Configによる生成からMSVCツールセット上のclang++を用いる構築の共通設定",
+			"configurePreset": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3",
+			"nativeToolOptions": []
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug",
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3", "build-build_type:Debug"],
+			"displayName": "Debug Build (Ninja Multi-Config, clang++)",
+			"description": "Ninja Multi-Configによる生成からMSVCツールセット上のclang++・lld-linkを使い、Debug構成で構築する"
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-RelWithDebInfo",
+			"hidden": true,
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3", "build-build_type:RelWithDebInfo"],
+			"displayName": "RelWithDebInfo Build (Ninja Multi-Config, clang++)",
+			"description": "Ninja Multi-Configによる生成からMSVCツールセット上のclang++・lld-linkを使い、RelWithDebInfo構成で構築する"
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Release",
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3", "build-build_type:Release"],
+			"displayName": "Release Build (Ninja Multi-Config, clang++)",
+			"description": "Ninja Multi-Configによる生成からMSVCツールセット上のclang++・lld-linkを使い、Release構成で構築する"
+		},
+		{
+			"name": "build-bundle:x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3",
+			"hidden": true,
+			"displayName": "Build (Ninja Multi-Config, MSVC cl.exe)",
+			"description": "Ninja Multi-Configによる生成からMSVC cl.exeを用いる構築の共通設定",
+			"configurePreset": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3",
+			"nativeToolOptions": []
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Debug",
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3", "build-build_type:Debug"],
+			"displayName": "Debug Build (Ninja Multi-Config, MSVC cl.exe)",
+			"description": "Ninja Multi-Configによる生成からMSVC cl.exe・link.exeを使い、Debug構成で構築する"
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Release",
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3", "build-build_type:Release"],
+			"displayName": "Release Build (Ninja Multi-Config, MSVC cl.exe)",
+			"description": "Ninja Multi-Configによる生成からMSVC cl.exe・link.exeを使い、Release構成で構築する"
+		},
+		{
+			"name": "build-bundle:x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3",
+			"hidden": true,
+			"displayName": "Build (Visual Studio, MSVC cl.exe)",
+			"description": "Visual Studioによる生成からMSVC cl.exeを用いる構築の共通設定",
+			"configurePreset": "x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3",
+			"nativeToolOptions": []
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3-Debug",
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3", "build-build_type:Debug"],
+			"displayName": "Debug Build (Visual Studio, MSVC cl.exe)",
+			"description": "Visual Studioによる生成からMSVC cl.exe・link.exeを使い、Debug構成で構築する"
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3-Release",
+			"inherits": ["build-bundle:x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3", "build-build_type:Release"],
+			"displayName": "Release Build (Visual Studio, MSVC cl.exe)",
+			"description": "Visual Studioによる生成からMSVC cl.exe・link.exeを使い、Release構成で構築する"
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-ASan",
+			"hidden": true,
+			"inherits": "build-build_type:Debug",
+			"displayName": "Debug Build (Ninja Multi-Config, clang-cl + ASan)",
+			"description": "Ninja Multi-Configによる生成からclang-cl・lld-linkを使い、AddressSanitizerを有効にしたDebug構成で構築する",
+			"configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug-ASan"
+		},
+		{
+			"name": "build-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-packaging",
+			"inherits": "build-build_type:Release",
+			"displayName": "Release Build (Ninja Multi-Config, clang-cl + packaging)",
+			"description": "Ninja Multi-Configによる生成からclang-cl・lld-linkを使い、CPackによる配布物作成付きでRelease構成で構築する",
+			"configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-packaging"
+		},
+		{
+			"name": "install-bundle:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3",
+			"hidden": true,
+			"inherits": "install-operation:Default",
+			"displayName": "Install (Ninja Multi-Config, clang-cl)",
+			"description": "Ninja Multi-Configによる生成からclang-cl・lld-linkを使った構築成果物をインストールするための共通設定",
+			"configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3"
+		},
+		{
+			"name": "install-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug",
+			"inherits": ["install-bundle:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3", "build-build_type:Debug"],
+			"displayName": "Debug Install (Ninja Multi-Config, clang-cl)",
+			"description": "Ninja Multi-Configによる生成からclang-cl・lld-linkを使ったDebug構成の構築成果物をインストールする"
+		},
+		{
+			"name": "install-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release",
+			"inherits": ["install-bundle:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3", "build-build_type:Release"],
+			"displayName": "Release Install (Ninja Multi-Config, clang-cl)",
+			"description": "Ninja Multi-Configによる生成からclang-cl・lld-linkを使ったRelease構成の構築成果物をインストールする"
+		},
+		{
+			"name": "verify-checksum-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release",
+			"inherits": ["build-build_type:Release", "verify-checksum-operation:Default"],
+			"displayName": "Release Package Checksum Verification (Ninja Multi-Config, clang-cl + packaging)",
+			"description": "distディレクトリ内の配布物に対してSHA-256検査合計の一致を検証する",
+			"configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-packaging"
+		}
+	],
+	"testPresets": [
+		{ "name": "test-aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "test-build_type:Debug", "configurePreset": "aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "test-build_type:Release", "configurePreset": "aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "test-build_type:Debug", "configurePreset": "aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "test-build_type:Release", "configurePreset": "aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-aarch64-pc-windows-msvc-cl-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "test-build_type:Debug", "configurePreset": "aarch64-pc-windows-msvc-cl-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-aarch64-pc-windows-msvc-cl-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "test-build_type:Release", "configurePreset": "aarch64-pc-windows-msvc-cl-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "test-build_type:Debug", "configurePreset": "aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "test-build_type:Release", "configurePreset": "aarch64-*-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A-Debug", "inherits": "test-build_type:Debug", "configurePreset": "aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A-Release", "inherits": "test-build_type:Release", "configurePreset": "aarch64-*-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A" },
+		{ "name": "test-x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3-Debug", "inherits": "test-build_type:Debug", "configurePreset": "x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "test-x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3-Release", "inherits": "test-build_type:Release", "configurePreset": "x86_64-*-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "test-x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3-Debug", "inherits": "test-build_type:Debug", "configurePreset": "x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "test-x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3-Release", "inherits": "test-build_type:Release", "configurePreset": "x86_64-*-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug", "inherits": "test-build_type:Debug", "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release", "inherits": "test-build_type:Release", "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-packaging", "inherits": "test-build_type:Release", "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-packaging" },
+		{ "name": "test-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Debug", "inherits": "test-build_type:Debug", "configurePreset": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "test-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Release", "inherits": "test-build_type:Release", "configurePreset": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "test-x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3-Debug", "inherits": "test-build_type:Debug", "configurePreset": "x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3" },
+		{ "name": "test-x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3-Release", "inherits": "test-build_type:Release", "configurePreset": "x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug", "inherits": "test-build_type:Debug", "configurePreset": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3" },
+		{ "name": "test-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Release", "inherits": "test-build_type:Release", "configurePreset": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3" }
+	],
+	"packagePresets": [
+		{ "name": "package-ZIP-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release", "inherits": ["package-format:ZIP", "package-build_type:Release"], "configurePreset": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-packaging" }
+	],
+	"workflowPresets": [
+		{
+			"name": "validation-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug",
+			"displayName": "Configure, build, and test (Debug)",
+			"description": "Ninja Multi-Config生成器とclang-cl・lld-linkを用いてDebug構成を生成・構築し、テストを実行する",
+			"steps": [
+				{ "type": "configure", "name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3" },
+				{ "type": "build", "name": "build-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug" },
+				{ "type": "test", "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Debug" }
+			]
+		},
+		{
+			"name": "validation-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug",
+			"displayName": "Configure, build, and test with clang++ + lld-link (Debug)",
+			"description": "Ninja Multi-Config生成器とMSVCツールセット上のclang++・lld-linkを用いてDebug構成を生成・構築し、テストを実行する",
+			"steps": [
+				{ "type": "configure", "name": "x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3" },
+				{ "type": "build", "name": "build-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug" },
+				{ "type": "test", "name": "test-x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config-x86_64_v3-Debug" }
+			]
+		},
+		{
+			"name": "validation-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Debug",
+			"displayName": "Configure, build, and test with MSVC cl.exe (Debug)",
+			"description": "Ninja Multi-Config生成器とMSVC cl.exe・link.exeを用いてDebug構成を生成・構築し、テストを実行する",
+			"steps": [
+				{ "type": "configure", "name": "x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3" },
+				{ "type": "build", "name": "build-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Debug" },
+				{ "type": "test", "name": "test-x86_64-pc-windows-msvc-cl-Ninja_Multi_Config-x86_64_v3-Debug" }
+			]
+		},
+		{
+			"name": "validation-x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3-Debug",
+			"displayName": "Configure, build, and test with Visual Studio MSVC (Debug)",
+			"description": "Visual Studio生成器とMSVC cl.exeを用いてDebug構成を生成・構築し、テストを実行する",
+			"steps": [
+				{ "type": "configure", "name": "x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3" },
+				{ "type": "build", "name": "build-x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3-Debug" },
+				{ "type": "test", "name": "test-x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026-x86_64_v3-Debug" }
+			]
+		},
+		{
+			"name": "distribution-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release",
+			"displayName": "Configure, build, test, package, and verify (Release)",
+			"description": "Ninja Multi-Config生成器とclang-cl・lld-linkを用いてRelease構成を生成・構築・テストし、ZIP形式の配布物を作成してSHA-256検査合計を検証する",
+			"steps": [
+				{ "type": "configure", "name": "x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-packaging" },
+				{ "type": "build", "name": "build-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-packaging" },
+				{ "type": "test", "name": "test-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release-packaging" },
+				{ "type": "package", "name": "package-ZIP-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release" },
+				{ "type": "build", "name": "verify-checksum-x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-x86_64_v3-Release" }
+			]
+		}
+	],
+	"$comment": [""]
+}

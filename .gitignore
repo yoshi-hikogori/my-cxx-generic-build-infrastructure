@@ -1,0 +1,38 @@
+# 1️⃣既定で暗黙的に全ファイルが無視されるようにする
+# （直下のディレクトリ自体は無視せず追跡対象とする。なお、Git は追跡対象のファイルを含まないディレクトリは無視する仕様があることに注意すること）
+#
+
+*
+!/*/
+
+#
+# 2️⃣特定のパスのディレクトリ・ファイルを明示的に追跡対象にする
+# （Git は、追跡対象でないディレクトリ配下のパスを後から追跡対象のパスとして明示しても無視するので、必ず先んじて親のディレクトリを明示的に追跡対象にすること。有効な例：`!/.github/` に続けて `!/.github/**`）
+#
+
+!/.agents/**
+# /.cache
+!/.vscode/**
+# /build/
+!/cmake/**
+!/examples/**
+!/include/**
+# /install/
+!/src/**
+!/tests/**
+!/work/**
+!/.github/
+!/*.code-workspace
+!/.clang-format
+!/.clangd
+!/.gitattributes
+!/.gitignore
+!/.gitmodules
+!/.shared.gitconfig
+!/AGENTS.md
+!/CMakeLists.txt
+!/CMakePresets.json
+!/CMakeUserPresets.json
+!/LICENSE.md
+!/README.md
+!/お読みください.md

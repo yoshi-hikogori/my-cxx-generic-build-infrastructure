@@ -1,0 +1,19 @@
+CompileFlags:
+  CompilationDatabase: ./build
+  Add:
+    - -D_CLANGD=1
+InlayHints:
+  BlockEnd: true
+  Enabled: true
+  DefaultArguments: true
+Documentation:
+  CommentFormat: Doxygen
+# ---
+# If:
+#   PathMatch:
+#     - .*\.(cpp|cc|cxx|c\+\+)$
+#     - .*\.(cppm|ixx)$
+#     - .*\.(hpp|hh|hxx|h)$
+# CompileFlags:
+#   Add:
+#     - /std:c++latest

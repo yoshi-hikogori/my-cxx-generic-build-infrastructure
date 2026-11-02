@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=https://www.schemastore.org/clang-format-23.x.json
+# BasedOnStyle:  LLVM
+# BasedOnStyle:  Google
+# BasedOnStyle:  Mozilla
+---
+Language: Cpp
+AccessModifierOffset: -2
+AlignAfterOpenBracket: true
+AlignEscapedNewlines: LeftWithLastLine
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortNamespacesOnASingleLine: true
+AllowShortRecordOnASingleLine: EmptyAndAttached
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakTemplateDeclarations: MultiLine
+AlwaysBreakBeforeMultilineStrings: false
+BinPackArguments: true
+BinPackLongBracedList: true
+BinPackParameters: BinPack
+BracedInitializerIndentWidth: 2
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterObjCDeclaration: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakAfterOpenBracketLoop: true
+BreakAfterOpenBracketSwitch: true
+BreakAfterReturnType: Automatic
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Custom
+BreakBeforeCloseBracketBracedList: true
+BreakBeforeCloseBracketFunction: true
+BreakBeforeCloseBracketIf: true
+BreakBeforeCloseBracketLoop: true
+BreakBeforeCloseBracketSwitch: true
+BreakBeforeReturnType: TopLevelDefinitions
+BreakBeforeTemplateCloser: true
+BreakBinaryOperations:
+  Default: RespectPrecedence
+  PerOperator:
+    - Operators: ['&&', '||']
+      Style: OnePerLine
+      MinChainLength: 3
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+BreakStringLiterals: false
+BreakTemplateDeclarations: MultiLine
+ColumnLimit: 100
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+Cpp11BracedListStyle: AlignFirstComment
+DerivePointerAlignment: false
+EnumTrailingComma: Leave
+FixNamespaceComments: true
+IncludeBlocks: Regroup
+IndentCaseLabels: true
+IndentExportBlock: true
+IndentPPDirectives: AfterHash
+IndentWidth: 2
+InsertNewlineAtEOF: true
+KeepEmptyLines:
+  AtEndOfFile: false
+  AtStartOfBlock: true
+  AtStartOfFile: true
+KeepFormFeed: true
+LineEnding: LF
+NamespaceIndentation: All
+NumericLiteralCase:
+  ExponentLetter: Lower
+  HexDigit: Upper
+  Prefix: Lower
+ObjCBlockIndentWidth: 2
+PointerAlignment: Right
+PPIndentWidth: -1
+PackArguments:
+  BinPack: BinPack
+PackConstructorInitializers: BinPack
+PackParameters:
+  BinPack: BinPack
+# QualifierOrder: [friend, static, inline, constexpr, const, restrict, volatile, type]
+ReflowComments: Never
+RemoveEmptyLinesInUnwrappedLines: true
+SpaceAfterOperatorKeyword: true
+SpaceAfterTemplateKeyword: true
+SpaceInEmptyBraces: Block
+SpacesBeforeTrailingComments: 2
+Standard: Latest
+TabWidth: 2
+UseTab: ForContinuationAndIndentation
+WrapNamespaceBodyWithEmptyLines: Never

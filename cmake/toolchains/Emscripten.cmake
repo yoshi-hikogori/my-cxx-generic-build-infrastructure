@@ -1,0 +1,15 @@
+# コンパイラ・ターゲット・sysrootの設定はSDKに委譲する
+set(EMSCRIPTEN_ROOT "" CACHE PATH "Emscripten root containing cmake/Modules/Platform/Emscripten.cmake")
+if(NOT EMSCRIPTEN_ROOT)
+	if(DEFINED ENV{EMSCRIPTEN})
+		set(EMSCRIPTEN_ROOT "$ENV{EMSCRIPTEN}")
+	elseif(DEFINED ENV{EMSDK})
+		set(EMSCRIPTEN_ROOT "$ENV{EMSDK}/upstream/emscripten")
+	endif()
+endif()
+if(NOT IS_ABSOLUTE "${EMSCRIPTEN_ROOT}" OR
+	NOT EXISTS "${EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake")
+	message(FATAL_ERROR "Emscripten SDKが見つかりません。絶対パスのSDKルートをEMSCRIPTEN_ROOTに指定するか、EMSDKを有効にしてください")
+endif()
+list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES EMSCRIPTEN_ROOT)
+include("${EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake")

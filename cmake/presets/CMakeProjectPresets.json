@@ -1,0 +1,216 @@
+{
+	"$schema": "https://gitlab.kitware.com/cmake/cmake/-/raw/master/Help/manual/presets/schema.json",
+	"version": 13,
+	"cmakeMinimumRequired": { "major": 4, "minor": 5, "patch": 0 },
+	"configurePresets": [
+		{
+			"name": "layout:Windows_clang_cl",
+			"hidden": true,
+			"description": "Windowsのclang-cl構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-multi-clangcl",
+			"installDir": "${sourceDir}/install/ninja-multi-clangcl"
+		},
+		{
+			"name": "layout:Windows_clang",
+			"hidden": true,
+			"description": "Windowsのclang++構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-multi-clang",
+			"installDir": "${sourceDir}/install/ninja-multi-clang"
+		},
+		{
+			"name": "layout:Windows_cl",
+			"hidden": true,
+			"description": "Windowsのcl構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-multi-cl",
+			"installDir": "${sourceDir}/install/ninja-multi-cl"
+		},
+		{
+			"name": "layout:Windows_Visual_Studio",
+			"hidden": true,
+			"description": "Visual Studio構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/visual-studio-cl",
+			"installDir": "${sourceDir}/install/visual-studio-cl"
+		},
+		{
+			"name": "layout:Linux_clang",
+			"hidden": true,
+			"description": "LinuxのClang構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-multi-linux-clang",
+			"installDir": "${sourceDir}/install/ninja-multi-linux-clang"
+		},
+		{
+			"name": "layout:Linux_gcc",
+			"hidden": true,
+			"description": "LinuxのGCC構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-multi-linux-gcc",
+			"installDir": "${sourceDir}/install/ninja-multi-linux-gcc"
+		},
+		{
+			"name": "layout:Emscripten",
+			"hidden": true,
+			"description": "Emscripten構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-emscripten",
+			"installDir": "${sourceDir}/install/ninja-emscripten"
+		},
+		{
+			"name": "layout:WASI",
+			"hidden": true,
+			"description": "WASI構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-wasi",
+			"installDir": "${sourceDir}/install/ninja-wasi"
+		},
+		{
+			"name": "layout:Windows_ASan",
+			"hidden": true,
+			"description": "ASan構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-multi-clangcl-asan",
+			"installDir": "${sourceDir}/install/ninja-multi-clangcl-asan"
+		},
+		{
+			"name": "layout:Windows_static_runtime",
+			"hidden": true,
+			"description": "静的runtime構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-multi-clangcl-static-runtime",
+			"installDir": "${sourceDir}/install/ninja-multi-clangcl-static-runtime"
+		},
+		{
+			"name": "layout:Windows_packaging",
+			"hidden": true,
+			"description": "配布物生成構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/ninja-multi-clangcl-package",
+			"installDir": "${sourceDir}/install/ninja-multi-clangcl-package"
+		},
+		{
+			"name": "layout:Windows_ARM64_clang_cl",
+			"hidden": true,
+			"description": "Windows ARM64のclang-cl構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/win-arm64-clangcl",
+			"installDir": "${sourceDir}/install/win-arm64-clangcl"
+		},
+		{
+			"name": "layout:Windows_ARM64_clang",
+			"hidden": true,
+			"description": "Windows ARM64のclang++構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/win-arm64-clang",
+			"installDir": "${sourceDir}/install/win-arm64-clang"
+		},
+		{
+			"name": "layout:Windows_ARM64_cl",
+			"hidden": true,
+			"description": "Windows ARM64のcl構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/win-arm64-cl",
+			"installDir": "${sourceDir}/install/win-arm64-cl"
+		},
+		{
+			"name": "layout:Linux_AArch64_clang",
+			"hidden": true,
+			"description": "Linux AArch64のClang構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/linux-arm64-clang",
+			"installDir": "${sourceDir}/install/linux-arm64-clang"
+		},
+		{
+			"name": "layout:Linux_AArch64_gcc",
+			"hidden": true,
+			"description": "Linux AArch64のGCC構成の出力先を定める設定",
+			"binaryDir": "${sourceDir}/build/linux-arm64-gcc",
+			"installDir": "${sourceDir}/install/linux-arm64-gcc"
+		},
+		{
+			"name": "system:Windows(host:Windows)",
+			"hidden": true,
+			"description": "Windowsの開発環境を対象とするtoolchainの設定",
+			"toolchainFile": "${sourceDir}/cmake/toolchains/Windows.cmake"
+		},
+		{
+			"name": "system:Linux(host:Linux)",
+			"hidden": true,
+			"description": "Linuxのnative環境を対象とするtoolchainの設定",
+			"toolchainFile": "${sourceDir}/cmake/toolchains/Linux.cmake"
+		},
+		{
+			"name": "system:Emscripten",
+			"hidden": true,
+			"description": "Emscripten SDKを対象とするtoolchainの設定",
+			"toolchainFile": "${sourceDir}/cmake/toolchains/Emscripten.cmake"
+		},
+		{
+			"name": "system:WASI",
+			"hidden": true,
+			"description": "WASI SDKを対象とするtoolchainの設定",
+			"toolchainFile": "${sourceDir}/cmake/toolchains/WASI.cmake"
+		},
+		{
+			"name": "target_arch:x86_64",
+			"hidden": true,
+			"description": "x86_64を対象architectureに指定する設定",
+			"cacheVariables": { "MY_IMPORT_STD_TARGET_ARCH": "x86_64" }
+		},
+		{
+			"name": "target_arch:aarch64",
+			"hidden": true,
+			"description": "AArch64を対象architectureに指定する設定",
+			"cacheVariables": { "MY_IMPORT_STD_TARGET_ARCH": "aarch64" }
+		},
+		{
+			"name": "cpu_type:x86_64_v3(target_arch:x86_64)",
+			"hidden": true,
+			"description": "x86_64 targetにx86-64-v3のCPU水準を要求する設定",
+			"cacheVariables": { "MY_IMPORT_STD_CPU_BASELINE": "x86-64-v3" }
+		},
+		{
+			"name": "cpu_type:Armv8.2_A(target_arch:aarch64)",
+			"hidden": true,
+			"description": "AArch64 targetにArmv8.2-AのCPU水準を要求する設定",
+			"cacheVariables": { "MY_IMPORT_STD_CPU_BASELINE": "armv8.2-a" }
+		},
+		{
+			"name": "target_environment:GNU(system:Linux)",
+			"hidden": true,
+			"description": "Linux targetにGNU/glibcの実行環境を要求する設定",
+			"cacheVariables": { "MY_IMPORT_STD_TARGET_ENVIRONMENT": "gnu" }
+		},
+		{
+			"name": "feature:PCH_off",
+			"hidden": true,
+			"description": "PCHを無効にする構成の設定",
+			"cacheVariables": { "MY_IMPORT_STD_ENABLE_PCH": false }
+		},
+		{
+			"name": "feature:Examples",
+			"hidden": true,
+			"description": "module利用例の構築を有効にする構成の設定",
+			"cacheVariables": { "MY_IMPORT_STD_BUILD_EXAMPLES": true }
+		},
+		{
+			"name": "feature:AVX2",
+			"hidden": true,
+			"description": "x86 targetにAVX2を要求する構成の設定",
+			"cacheVariables": { "MY_IMPORT_STD_ENABLE_AVX2": { "type": "BOOL", "value": "ON" } }
+		},
+		{
+			"name": "feature:Static_runtime",
+			"hidden": true,
+			"description": "静的MSVCランタイムを用いる構成の設定",
+			"cacheVariables": { "MY_IMPORT_STD_USE_STATIC_RUNTIME": { "type": "BOOL", "value": "ON" } }
+		},
+		{
+			"name": "feature:Packaging",
+			"hidden": true,
+			"description": "CPackによる配布物生成を有効にする構成の設定",
+			"cacheVariables": { "MY_IMPORT_STD_ENABLE_PACKAGING": { "type": "BOOL", "value": "ON" } }
+		},
+		{
+			"name": "feature:Instrumentation",
+			"hidden": true,
+			"description": "ローカルのbuild計測を有効にする構成の設定",
+			"cacheVariables": { "MY_IMPORT_STD_ENABLE_INSTRUMENTATION": true }
+		}
+	],
+	"buildPresets": [
+		{ "name": "verify-checksum-operation:Default", "hidden": true, "description": "配布物のSHA-256検査合計を検証する操作の設定", "targets": ["verify-package-checksum"] },
+		{ "name": "build-prepare-operation:Test", "hidden": true, "description": "テストの依存targetを準備する操作の設定", "targets": ["test_prep/all"] },
+		{ "name": "build-prepare-operation:Test_and_install", "hidden": true, "description": "テストとinstallの依存targetを準備する操作の設定", "targets": ["test_prep/all", "install_prep/all"] }
+	],
+	"testPresets": [],
+	"packagePresets": []
+}

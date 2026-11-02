@@ -1,0 +1,219 @@
+{
+	"$schema": "https://gitlab.kitware.com/cmake/cmake/-/raw/master/Help/manual/presets/schema.json",
+	"version": 13,
+	"cmakeMinimumRequired": { "major": 4, "minor": 5, "patch": 0 },
+	"configurePresets": [
+		{
+			"name": "host:Windows",
+			"hidden": true,
+			"condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" },
+			"description": "Windowsホスト上で利用する構成の共通条件"
+		},
+		{
+			"name": "host:Linux",
+			"hidden": true,
+			"condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux" },
+			"description": "Linuxホスト上で利用する構成の共通条件"
+		},
+		{
+			"name": "build_types:Debug_Release_RelWithDebInfo",
+			"hidden": true,
+			"description": "multi-config生成器で利用するビルド構成の共通設定",
+			"cacheVariables": {
+				"CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo"
+			}
+		},
+		{
+			"name": "default_build_type:Debug(generator:Ninja_Multi_Config)",
+			"hidden": true,
+			"description": "multi-config生成器の既定のビルド構成にDebugを用いる設定",
+			"cacheVariables": {
+				"CMAKE_DEFAULT_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "build_types:Debug",
+			"hidden": true,
+			"description": "multi-config生成器でDebug構成だけを生成する設定",
+			"cacheVariables": { "CMAKE_CONFIGURATION_TYPES": "Debug" }
+		},
+		{
+			"name": "build_type:Debug(generator:single_config)",
+			"hidden": true,
+			"description": "single-config生成器でDebug構成を用いる設定",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "build_type:Release(generator:single_config)",
+			"hidden": true,
+			"description": "single-config生成器でRelease構成を用いる設定",
+			"cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+		},
+		{
+			"name": "build_type:RelWithDebInfo(generator:single_config)",
+			"hidden": true,
+			"description": "single-config生成器でRelWithDebInfo構成を用いる設定",
+			"cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+		},
+		{
+			"name": "generator:Ninja_Multi_Config",
+			"hidden": true,
+			"description": "Ninja Multi-Config生成器を用いた構成の共通設定",
+			"generator": "Ninja Multi-Config"
+		},
+		{
+			"name": "generator:Ninja",
+			"hidden": true,
+			"description": "Ninja生成器を用いた構成の共通設定",
+			"generator": "Ninja"
+		},
+		{
+			"name": "generator:Visual_Studio_18_2026",
+			"hidden": true,
+			"description": "Visual Studio生成器を用いた構成の共通設定",
+			"generator": "Visual Studio 18 2026"
+		},
+		{
+			"name": "architecture:x64(strategy:external)",
+			"hidden": true,
+			"description": "外部の開発環境にx64 architectureの選択を任せる設定",
+			"architecture": { "value": "x64", "strategy": "external", "$comment": [""] }
+		},
+		{
+			"name": "architecture:ARM64(strategy:external)",
+			"hidden": true,
+			"description": "外部の開発環境にARM64 architectureの選択を任せる設定",
+			"architecture": { "value": "ARM64", "strategy": "external" }
+		},
+		{
+			"name": "toolset:version(strategy:external)",
+			"hidden": true,
+			"description": "外部の開発環境にtoolsetのversion選択を任せる設定",
+			"toolset": { "value": "version=", "strategy": "external", "$comment": [""] }
+		},
+		{
+			"name": "diagnostics:Developer",
+			"hidden": true,
+			"description": "開発時の警告とstrictエラーを有効にする診断の共通設定",
+			"warnings": {
+				"author": true,
+				"installAbsoluteDestination": true,
+				"nonTargetDirective": true,
+				"systemVars": true
+			},
+			"errors": { "strict": true }
+		},
+		{
+			"name": "diagnostics:Strict_warnings",
+			"hidden": true,
+			"description": "strict警告を有効にする診断の設定",
+			"warnings": { "strict": true }
+		},
+		{
+			"name": "debug:Output",
+			"hidden": true,
+			"description": "configureのdebug出力を有効にする設定",
+			"debug": { "output": true, "tryCompile": false, "find": false }
+		},
+		{
+			"name": "debug:Quiet",
+			"hidden": true,
+			"description": "configureのdebug出力を無効にする設定",
+			"debug": { "output": false }
+		},
+		{
+			"name": "trace:Expanded",
+			"hidden": true,
+			"description": "展開済みのCMake traceをJSON形式で保存する設定",
+			"trace": {
+				"$comment": ["`configurePresets.trace.redirect`はCMakeプロセスの現在ディレクトリ基準のパス"],
+				"mode": "expand",
+				"format": "json-v1",
+				"redirect": "./trace_log.jsonl"
+			}
+		},
+		{
+			"name": "trace:Off",
+			"hidden": true,
+			"description": "CMake traceのmodeをoffにする設定",
+			"trace": { "mode": "off" }
+		},
+		{
+			"name": "compiler:clang_cl",
+			"hidden": true,
+			"description": "clang-clを用いるcompilerの設定",
+			"cacheVariables": {
+				"CMAKE_CXX_COMPILER": { "type": "STRING", "value": "clang-cl.exe" }
+			}
+		},
+		{
+			"name": "compiler:clang++(system:Windows)",
+			"hidden": true,
+			"description": "MSVCツールセット上でclangのGNU風フロントエンドを用いるcompilerの設定",
+			"cacheVariables": {
+				"CMAKE_CXX_COMPILER": { "type": "STRING", "value": "clang++.exe" }
+			}
+		},
+		{
+			"name": "compiler:cl",
+			"hidden": true,
+			"description": "MSVC cl.exeを用いるcompilerの設定",
+			"cacheVariables": {
+				"CMAKE_CXX_COMPILER": { "type": "STRING", "value": "cl.exe" }
+			}
+		},
+		{
+			"name": "compiler:clang++(system:Linux)",
+			"hidden": true,
+			"description": "LinuxのClangを用いるcompilerの設定",
+			"cacheVariables": { "CMAKE_CXX_COMPILER": "clang++" }
+		},
+		{
+			"name": "compiler:g++",
+			"hidden": true,
+			"description": "GCCを用いるcompilerの設定",
+			"cacheVariables": { "CMAKE_CXX_COMPILER": "g++" }
+		},
+		{
+			"name": "linker:LLD",
+			"hidden": true,
+			"description": "LLDを用いるlinkerの設定",
+			"cacheVariables": { "CMAKE_LINKER_TYPE": "LLD" }
+		},
+		{
+			"name": "feature:IPO_off(build_type:Release)",
+			"hidden": true,
+			"description": "Release構成のIPOを無効にする設定",
+			"cacheVariables": { "CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE": false }
+		},
+		{
+			"name": "feature:ASan(compiler:clang_cl,build_type:Debug)",
+			"hidden": true,
+			"description": "clang-clのDebug用フラグにAddressSanitizerを追加する設定",
+			"cacheVariables": {
+				"CMAKE_EXE_LINKER_FLAGS_DEBUG": "-fsanitize=address",
+				"CMAKE_CXX_FLAGS_DEBUG": "-fsanitize=address -fno-omit-frame-pointer"
+			}
+		}
+	],
+	"buildPresets": [
+		{ "name": "build-build_type:Debug", "hidden": true, "description": "Debug構成を構築するための共通設定", "configuration": "Debug" },
+		{ "name": "build-build_type:Release", "hidden": true, "description": "Release構成を構築するための共通設定", "configuration": "Release" },
+		{ "name": "build-build_type:RelWithDebInfo", "hidden": true, "description": "RelWithDebInfo構成を構築するための共通設定", "configuration": "RelWithDebInfo" },
+		{ "name": "install-operation:Default", "hidden": true, "description": "構築成果物をインストールする操作の設定", "targets": ["install"] }
+	],
+	"testPresets": [
+		{ "name": "test-build_type:Debug", "hidden": true, "description": "Debug構成をテストするための共通設定", "configuration": "Debug" },
+		{ "name": "test-build_type:Release", "hidden": true, "description": "Release構成をテストするための共通設定", "configuration": "Release" },
+		{ "name": "test-build_type:RelWithDebInfo", "hidden": true, "description": "RelWithDebInfo構成をテストするための共通設定", "configuration": "RelWithDebInfo" },
+		{ "name": "test-output:On_failure", "hidden": true, "description": "失敗したテストの出力を表示する設定", "output": { "outputOnFailure": true } }
+	],
+	"packagePresets": [
+		{ "name": "package-format:ZIP", "hidden": true, "description": "ZIP形式の配布物を生成する設定", "generators": ["ZIP"] },
+		{ "name": "package-build_type:Debug", "hidden": true, "description": "Debug構成の配布物を生成する設定", "configurations": ["Debug"] },
+		{ "name": "package-build_type:Release", "hidden": true, "description": "Release構成の配布物を生成する設定", "configurations": ["Release"] },
+		{ "name": "package-build_type:RelWithDebInfo", "hidden": true, "description": "RelWithDebInfo構成の配布物を生成する設定", "configurations": ["RelWithDebInfo"] }
+	]
+}

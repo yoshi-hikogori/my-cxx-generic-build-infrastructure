@@ -1,0 +1,42 @@
+if(NOT DEFINED CHECK_BINARY_DIR OR NOT IS_ABSOLUTE "${CHECK_BINARY_DIR}")
+	message(FATAL_ERROR "CHECK_BINARY_DIRにはテスト用の絶対パスを指定してください")
+endif()
+
+function(check_checksum case expected)
+	execute_process(
+		ENCODING UTF-8
+		COMMAND "${CMAKE_COMMAND}" "-DDIST_DIRECTORY=${CHECK_BINARY_DIR}/${case}"
+			-P "${CMAKE_CURRENT_LIST_DIR}/../../cmake/VerifyPackageChecksums.cmake"
+		RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error
+	)
+	if(expected STREQUAL "success")
+		if(NOT result EQUAL 0 OR NOT output MATCHES "検証しました")
+			message(FATAL_ERROR "${case}に失敗しました：\n${output}\n${error}")
+		endif()
+	elseif(result EQUAL 0 OR NOT "${output}\n${error}" MATCHES "${expected}")
+		message(FATAL_ERROR "${case}：'${expected}'というエラーが期待されました：\n${output}\n${error}")
+	endif()
+endfunction()
+
+foreach(case IN ITEMS valid uppercase short malformed missing-package mismatch empty)
+	file(MAKE_DIRECTORY "${CHECK_BINARY_DIR}/${case}")
+endforeach()
+file(WRITE "${CHECK_BINARY_DIR}/valid/package space.zip" "checksum fixture")
+file(SHA256 "${CHECK_BINARY_DIR}/valid/package space.zip" hash)
+file(WRITE "${CHECK_BINARY_DIR}/valid/package.sha256" "${hash}  package space.zip\n")
+check_checksum(valid success)
+string(TOUPPER "${hash}" uppercase_hash)
+file(WRITE "${CHECK_BINARY_DIR}/uppercase/package.zip" "checksum fixture")
+file(WRITE "${CHECK_BINARY_DIR}/uppercase/package.sha256" "${uppercase_hash} *package.zip\n")
+check_checksum(uppercase success)
+file(WRITE "${CHECK_BINARY_DIR}/short/package.sha256" "abcd  package.zip\n")
+check_checksum(short "SHA-256の長さが正しくありません")
+file(WRITE "${CHECK_BINARY_DIR}/malformed/package.sha256" "not a checksum")
+check_checksum(malformed "検査合計ファイルの形式が正しくありません")
+file(WRITE "${CHECK_BINARY_DIR}/missing-package/package.sha256" "${hash}  absent.zip\n")
+check_checksum(missing-package "パッケージが見つかりません")
+file(WRITE "${CHECK_BINARY_DIR}/mismatch/package.zip" "changed content")
+file(WRITE "${CHECK_BINARY_DIR}/mismatch/package.sha256" "${hash}  package.zip\n")
+check_checksum(mismatch "検査合計が一致しません")
+check_checksum(empty "SHA-256ファイルが見つかりません")
+message(STATUS "検査合計検証の成功・失敗ケースを確認しました")

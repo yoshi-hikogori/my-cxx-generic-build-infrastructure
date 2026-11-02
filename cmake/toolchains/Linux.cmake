@@ -1,0 +1,10 @@
+# Linux上のネイティブビルド専用。コンパイラはプリセットで変更できる
+if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+	message(FATAL_ERROR "Linux.cmakeはLinux上のネイティブビルド専用です。クロスビルドには専用のSDKツールチェーンが必要です")
+endif()
+if(DEFINED CMAKE_SYSTEM_NAME AND NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	message(FATAL_ERROR "Linux.cmakeでは${CMAKE_SYSTEM_NAME}をターゲットにできません")
+endif()
+if(NOT CMAKE_CXX_COMPILER)
+	find_program(CMAKE_CXX_COMPILER NAMES clang++ g++ REQUIRED)
+endif()
