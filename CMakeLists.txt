@@ -8,29 +8,16 @@ include("${PROJECT_SOURCE_DIR}/cmake/MyImportStdTargetSettings.cmake")
 if(DEFINED MY_IMPORT_STD_ENABLE_MODULES AND NOT MY_IMPORT_STD_ENABLE_MODULES)
 	message(FATAL_ERROR "このプロジェクトではC++モジュールが必須です。MY_IMPORT_STD_ENABLE_MODULES=OFFはもう対応していません")
 endif()
-cmake_generic_build_infrastructure_require_module_generator()
 
 option(MY_IMPORT_STD_ENABLE_PCH "Enable precompiled headers" ON)
 option(MY_IMPORT_STD_BUILD_EXAMPLES "Build example projects" OFF)
 option(MY_IMPORT_STD_ENABLE_AVX2 "Require AVX2 support on the target CPU" OFF)
-option(MY_IMPORT_STD_USE_STATIC_RUNTIME "Use the statically linked MSVC runtime" OFF)
 option(MY_IMPORT_STD_ENABLE_INSTRUMENTATION "Collect local build timing, output and Clang traces" OFF)
-set(MY_IMPORT_STD_TARGET_ARCH "" CACHE STRING "Required target architecture: x86_64 or aarch64; empty delegates to the toolchain")
-set_property(CACHE MY_IMPORT_STD_TARGET_ARCH PROPERTY STRINGS "" x86_64 aarch64)
-set(MY_IMPORT_STD_CPU_BASELINE "" CACHE STRING "Required CPU baseline: x86-64-v3 or armv8.2-a; empty uses compiler defaults")
-set_property(CACHE MY_IMPORT_STD_CPU_BASELINE PROPERTY STRINGS "" x86-64-v3 armv8.2-a)
-set(MY_IMPORT_STD_TARGET_ENVIRONMENT "" CACHE STRING "Required target environment: gnu for Linux/glibc; empty delegates to the toolchain")
-set_property(CACHE MY_IMPORT_STD_TARGET_ENVIRONMENT PROPERTY STRINGS "" gnu)
-my_import_std_validate_target_platform()
 
 if(MY_IMPORT_STD_ENABLE_INSTRUMENTATION)
 	cmake_generic_build_infrastructure_enable_instrumentation(
 		OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/instrumentation"
 	)
-endif()
-
-if(MY_IMPORT_STD_USE_STATIC_RUNTIME)
-	cmake_generic_build_infrastructure_use_static_msvc_runtime()
 endif()
 
 add_library(my_import_std_modules STATIC)

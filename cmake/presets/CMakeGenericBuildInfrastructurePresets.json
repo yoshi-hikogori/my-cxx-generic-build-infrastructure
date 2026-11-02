@@ -59,7 +59,9 @@
 			"name": "build_types:Debug",
 			"hidden": true,
 			"description": "multi-config生成器でDebug構成だけを生成する設定",
-			"cacheVariables": { "CMAKE_CONFIGURATION_TYPES": "Debug" }
+			"cacheVariables": {
+				"CMAKE_CONFIGURATION_TYPES": "Debug"
+			}
 		},
 		{
 			"name": "build_type:Debug(generator:single_config)",
@@ -73,13 +75,17 @@
 			"name": "build_type:Release(generator:single_config)",
 			"hidden": true,
 			"description": "single-config生成器でRelease構成を用いる設定",
-			"cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
 		},
 		{
 			"name": "build_type:RelWithDebInfo(generator:single_config)",
 			"hidden": true,
 			"description": "single-config生成器でRelWithDebInfo構成を用いる設定",
-			"cacheVariables": { "CMAKE_BUILD_TYPE": "RelWithDebInfo" }
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
 		},
 		{
 			"name": "generator:Ninja_Multi_Config",
@@ -127,25 +133,35 @@
 				"nonTargetDirective": true,
 				"systemVars": true
 			},
-			"errors": { "strict": true }
+			"errors": {
+				"strict": true
+			}
 		},
 		{
 			"name": "diagnostics:Strict_warnings",
 			"hidden": true,
 			"description": "strict警告を有効にする診断の設定",
-			"warnings": { "strict": true }
+			"warnings": {
+				"strict": true
+			}
 		},
 		{
 			"name": "debug:Output",
 			"hidden": true,
 			"description": "configureのdebug出力を有効にする設定",
-			"debug": { "output": true, "tryCompile": false, "find": false }
+			"debug": {
+				"output": true,
+				"tryCompile": false,
+				"find": false
+			}
 		},
 		{
 			"name": "debug:Quiet",
 			"hidden": true,
 			"description": "configureのdebug出力を無効にする設定",
-			"debug": { "output": false }
+			"debug": {
+				"output": false
+			}
 		},
 		{
 			"name": "trace:Expanded",
@@ -162,7 +178,9 @@
 			"name": "trace:Off",
 			"hidden": true,
 			"description": "CMake traceのmodeをoffにする設定",
-			"trace": { "mode": "off" }
+			"trace": {
+				"mode": "off"
+			}
 		},
 		{
 			"name": "compiler:clang_cl",
@@ -192,25 +210,41 @@
 			"name": "compiler:clang++(system:Linux)",
 			"hidden": true,
 			"description": "LinuxのClangを用いるcompilerの設定",
-			"cacheVariables": { "CMAKE_CXX_COMPILER": "clang++" }
+			"cacheVariables": {
+				"CMAKE_CXX_COMPILER": "clang++"
+			}
 		},
 		{
 			"name": "compiler:g++",
 			"hidden": true,
 			"description": "GCCを用いるcompilerの設定",
-			"cacheVariables": { "CMAKE_CXX_COMPILER": "g++" }
+			"cacheVariables": {
+				"CMAKE_CXX_COMPILER": "g++"
+			}
 		},
 		{
 			"name": "linker:LLD",
 			"hidden": true,
 			"description": "LLDを用いるlinkerの設定",
-			"cacheVariables": { "CMAKE_LINKER_TYPE": "LLD" }
+			"cacheVariables": {
+				"CMAKE_LINKER_TYPE": "LLD"
+			}
+		},
+		{
+			"name": "feature:Static_runtime",
+			"hidden": true,
+			"description": "静的MSVCランタイムを用いる構成の設定",
+			"cacheVariables": {
+				"CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+			}
 		},
 		{
 			"name": "feature:IPO_off(build_type:Release)",
 			"hidden": true,
 			"description": "Release構成のIPOを無効にする設定",
-			"cacheVariables": { "CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE": false }
+			"cacheVariables": {
+				"CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE": false
+			}
 		},
 		{
 			"name": "feature:ASan(compiler:clang_cl,build_type:Debug)",
@@ -220,6 +254,130 @@
 				"CMAKE_EXE_LINKER_FLAGS_DEBUG": "-fsanitize=address",
 				"CMAKE_CXX_FLAGS_DEBUG": "-fsanitize=address -fno-omit-frame-pointer"
 			}
+		},
+		{
+			"name": "target_arch:x86_64",
+			"hidden": true,
+			"description": "x86_64を対象architectureに指定する設定",
+			"cacheVariables": {
+				"CMAKE_SYSTEM_PROCESSOR": "x86_64"
+			}
+		},
+		{
+			"name": "cpu_type:x86_64_v3(target_arch:x86_64)",
+			"hidden": true,
+			"description": "ビルド全体のCPU最低水準をx86-64-v3に指定する設定",
+			"cacheVariables": {
+				"CGBI_CPU_BASELINE": "x86-64-v3"
+			}
+		},
+		{
+			"name": "cpu_type:Armv8.2_A(target_arch:aarch64)",
+			"hidden": true,
+			"description": "ビルド全体のCPU最低水準をArmv8.2-Aに指定する設定",
+			"cacheVariables": {
+				"CGBI_CPU_BASELINE": "armv8.2-a"
+			}
+		},
+		{
+			"name": "target_arch:aarch64",
+			"hidden": true,
+			"description": "AArch64を対象architectureに指定する設定",
+			"cacheVariables": {
+				"CMAKE_SYSTEM_PROCESSOR": "aarch64"
+			}
+		},
+		{
+			"name": "target_environment:GNU(system:Linux)",
+			"hidden": true,
+			"description": "Linux toolchainへGNUのtarget environmentを指定する設定",
+			"cacheVariables": {
+				"CGBI_TARGET_ENVIRONMENT": "gnu"
+			}
+		},
+		{
+			"name": "aggregation:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:x86_64", "architecture:x64(strategy:external)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Windows", "system:Windows(host:Windows)", "compiler:clang_cl", "linker:LLD"],
+			"description": "clang-clとlldを用いた構築の構成"
+		},
+		{
+			"name": "aggregation:x86_64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:x86_64", "architecture:x64(strategy:external)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Windows", "system:Windows(host:Windows)", "compiler:clang++(system:Windows)", "linker:LLD"],
+			"description": "MSVCツールセット上でclangのGNU風フロントエンドとlld-linkを用いた構築の構成"
+		},
+		{
+			"name": "aggregation:x86_64-pc-windows-msvc-cl-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:x86_64", "architecture:x64(strategy:external)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Windows", "system:Windows(host:Windows)", "compiler:cl"],
+			"description": "MSVC cl.exeとlink.exeを用いた構築の構成"
+		},
+		{
+			"name": "aggregation:x86_64-pc-windows-msvc-cl-Visual_Studio_18_2026",
+			"hidden": true,
+			"inherits": ["target_arch:x86_64", "diagnostics:Developer", "host:Windows", "generator:Visual_Studio_18_2026", "build_types:Debug_Release_RelWithDebInfo", "architecture:x64(strategy:external)", "toolset:version(strategy:external)"],
+			"description": "Visual Studio generatorとMSVC cl.exeを用いた構築の構成"
+		},
+		{
+			"name": "aggregation:x86_64-@-linux-gnu-clang++-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:x86_64", "target_environment:GNU(system:Linux)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Linux", "system:Linux(host:Linux)", "compiler:clang++(system:Linux)"],
+			"description": "Linuxのnative環境でClangとNinja Multi-Config生成器を用いた構築の構成"
+		},
+		{
+			"name": "aggregation:x86_64-@-linux-gnu-g++-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:x86_64", "target_environment:GNU(system:Linux)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Linux", "system:Linux(host:Linux)", "compiler:g++"],
+			"description": "Linuxのnative環境でGCCとNinja Multi-Config生成器を用いた構築の構成"
+		},
+		{
+			"name": "aggregation:aarch64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:aarch64", "architecture:ARM64(strategy:external)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Windows", "system:Windows(host:Windows)", "compiler:clang_cl", "linker:LLD"],
+			"description": "Windows ARM64環境でclang-clとlld-linkを用いた構築の構成。ARM64用の開発環境が必要で、実ビルドは未検証"
+		},
+		{
+			"name": "aggregation:aarch64-pc-windows-msvc-clang++-lld_link-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:aarch64", "architecture:ARM64(strategy:external)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Windows", "system:Windows(host:Windows)", "compiler:clang++(system:Windows)", "linker:LLD"],
+			"description": "Windows ARM64環境でclang++とlld-linkを用いた構築の構成。ARM64用の開発環境が必要で、実ビルドは未検証"
+		},
+		{
+			"name": "aggregation:aarch64-pc-windows-msvc-cl-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:aarch64", "architecture:ARM64(strategy:external)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Windows", "system:Windows(host:Windows)", "compiler:cl"],
+			"description": "Windows ARM64環境でMSVC cl.exeを用いた構築の構成。ARM64用の開発環境が必要で、実ビルドは未検証"
+		},
+		{
+			"name": "aggregation:aarch64-@-linux-gnu-clang++-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:aarch64", "target_environment:GNU(system:Linux)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Linux", "system:Linux(host:Linux)", "compiler:clang++(system:Linux)"],
+			"description": "LinuxのAArch64・GNU/glibc環境でClangを用いた構築の構成。実ビルドは未検証"
+		},
+		{
+			"name": "aggregation:aarch64-@-linux-gnu-g++-Ninja_Multi_Config",
+			"hidden": true,
+			"inherits": ["target_arch:aarch64", "target_environment:GNU(system:Linux)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "build_types:Debug_Release_RelWithDebInfo", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Linux", "system:Linux(host:Linux)", "compiler:g++"],
+			"description": "LinuxのAArch64・GNU/glibc環境でGCCを用いた構築の構成。実ビルドは未検証"
+		},
+		{
+			"name": "aggregation:@-@-emscripten-@-Emscripten_sdk-Ninja-Debug",
+			"hidden": true,
+			"inherits": ["diagnostics:Developer", "generator:Ninja", "build_type:Debug(generator:single_config)", "system:Emscripten"],
+			"description": "Emscripten SDKとNinja生成器を用いた実験的な構築の構成。C++ modulesとimport stdに対応するSDKが必要で、実ビルドは未検証"
+		},
+		{
+			"name": "aggregation:@-@-@-@-WASI_sdk-Ninja-Debug",
+			"hidden": true,
+			"inherits": ["diagnostics:Developer", "generator:Ninja", "build_type:Debug(generator:single_config)", "system:WASI"],
+			"description": "WASI SDKとNinja生成器を用いた実験的な構築の構成。C++ modulesとimport stdに対応するSDKが必要で、実ビルドは未検証"
+		},
+		{
+			"name": "aggregation:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config-Debug-ASan",
+			"hidden": true,
+			"inherits": ["feature:ASan(compiler:clang_cl,build_type:Debug)", "build_types:Debug", "target_arch:x86_64", "architecture:x64(strategy:external)", "diagnostics:Developer", "generator:Ninja_Multi_Config", "default_build_type:Debug(generator:Ninja_Multi_Config)", "host:Windows", "system:Windows(host:Windows)", "compiler:clang_cl", "linker:LLD"],
+			"description": "clang-clのDebug構成でAddressSanitizerを有効にする環境"
 		}
 	],
 	"buildPresets": [
@@ -229,7 +387,11 @@
 		{ "name": "build-build_type:Debug", "hidden": true, "description": "Debug構成を構築するための共通設定", "configuration": "Debug" },
 		{ "name": "build-build_type:Release", "hidden": true, "description": "Release構成を構築するための共通設定", "configuration": "Release" },
 		{ "name": "build-build_type:RelWithDebInfo", "hidden": true, "description": "RelWithDebInfo構成を構築するための共通設定", "configuration": "RelWithDebInfo" },
-		{ "name": "install-operation:Default", "hidden": true, "description": "構築成果物をインストールする操作の設定", "targets": ["install"] }
+		{ "name": "install-operation:Default", "hidden": true, "description": "構築成果物をインストールする操作の設定", "targets": ["install"] },
+		{ "name": "install:Debug", "hidden": true, "inherits": ["install-operation:Default", "build-build_type:Debug"] },
+		{ "name": "install:Release", "hidden": true, "inherits": ["install-operation:Default", "build-build_type:Release"] },
+		{ "name": "install:RelWithDebInfo", "hidden": true, "inherits": ["install-operation:Default", "build-build_type:RelWithDebInfo"] },
+		{ "name": "verify-checksum:Release", "hidden": true, "inherits": ["build-build_type:Release", "verify-checksum-operation:Default"] }
 	],
 	"testPresets": [
 		{ "name": "test-build_type:Debug", "hidden": true, "description": "Debug構成をテストするための共通設定", "configuration": "Debug" },
@@ -241,6 +403,7 @@
 		{ "name": "package-format:ZIP", "hidden": true, "description": "ZIP形式の配布物を生成する設定", "generators": ["ZIP"] },
 		{ "name": "package-build_type:Debug", "hidden": true, "description": "Debug構成の配布物を生成する設定", "configurations": ["Debug"] },
 		{ "name": "package-build_type:Release", "hidden": true, "description": "Release構成の配布物を生成する設定", "configurations": ["Release"] },
-		{ "name": "package-build_type:RelWithDebInfo", "hidden": true, "description": "RelWithDebInfo構成の配布物を生成する設定", "configurations": ["RelWithDebInfo"] }
+		{ "name": "package-build_type:RelWithDebInfo", "hidden": true, "description": "RelWithDebInfo構成の配布物を生成する設定", "configurations": ["RelWithDebInfo"] },
+		{ "name": "package:ZIP-Release", "hidden": true, "inherits": ["package-format:ZIP", "package-build_type:Release"] }
 	]
 }

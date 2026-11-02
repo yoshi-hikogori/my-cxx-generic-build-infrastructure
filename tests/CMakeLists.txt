@@ -19,11 +19,11 @@ add_test(NAME my_import_std.cmake_helpers
 		"-DCHECK_BINARY_DIR=${check_root}/helpers"
 		"-DCHECK_COMPILER=${CMAKE_CXX_COMPILER}"
 		"-DCHECK_COMPILER_TARGET=${CMAKE_CXX_COMPILER_TARGET}"
-		"-DCHECK_ARCH=${MY_IMPORT_STD_TARGET_ARCH}"
+		"-DCHECK_ARCH=${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}"
 		-P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunChecks.cmake"
 	BUILD_DEPENDS
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureTargets.cmake"
-		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePlatform.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureCPU.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureInstrumentation.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/MyImportStdTargetSettings.cmake"
 		"${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunChecks.cmake"
@@ -38,6 +38,20 @@ add_test(NAME my_import_std.checksums
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/VerifyPackageChecksums.cmake"
 		"${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunChecksumChecks.cmake"
 )
+add_test(NAME my_import_std.cpu_baseline
+	COMMAND "${CMAKE_COMMAND}"
+		"-DCHECK_BINARY_DIR=${check_root}/cpu"
+		"-DCHECK_COMPILER=${CMAKE_CXX_COMPILER}"
+		"-DCHECK_ARCH=${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}"
+		-P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunCpuBaselineChecks.cmake"
+	BUILD_DEPENDS
+		"${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunCpuBaselineChecks.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/Windows.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/Linux.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/CpuBaseline.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/InitializeCpuBaseline.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureCPU.cmake"
+)
 add_test(NAME my_import_std.toolchains
 	COMMAND "${CMAKE_COMMAND}"
 		"-DCHECK_BINARY_DIR=${check_root}/toolchains"
@@ -46,6 +60,10 @@ add_test(NAME my_import_std.toolchains
 		"${PROJECT_SOURCE_DIR}/cmake/toolchains/Emscripten.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/toolchains/WASI.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/toolchains/Windows.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/Linux.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/CpuBaseline.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/toolchains/InitializeCpuBaseline.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureCPU.cmake"
 		"${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunToolchainChecks.cmake"
 )
 
@@ -78,10 +96,9 @@ add_test(NAME my_import_std.preset_axes
 		"${PROJECT_SOURCE_DIR}/CMakeUserPresets.json"
 		"${PROJECT_SOURCE_DIR}/cmake/presets/CMakeRecommendedUserPresets.json"
 		"${PROJECT_SOURCE_DIR}/cmake/presets/CMakeGenericBuildInfrastructurePresets.json"
-		"${PROJECT_SOURCE_DIR}/cmake/presets/CMakeProjectPresets.json"
 		"${PROJECT_SOURCE_DIR}/work/cmake-refactoring/CMakePresets.json"
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureTargets.cmake"
-		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePlatform.cmake"
+		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureCPU.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureInstrumentation.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/generic-build-infrastructure/SaveInstrumentation.cmake"
 		"${PROJECT_SOURCE_DIR}/cmake/toolchains/Windows.cmake"

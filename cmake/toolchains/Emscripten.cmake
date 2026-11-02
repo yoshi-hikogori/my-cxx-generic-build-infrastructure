@@ -1,4 +1,7 @@
 # コンパイラ・ターゲット・sysrootの設定はSDKに委譲する
+if(DEFINED CGBI_TARGET_ENVIRONMENT AND NOT CGBI_TARGET_ENVIRONMENT STREQUAL "")
+	message(FATAL_ERROR "CGBI_TARGET_ENVIRONMENTはEmscripten SDKでは指定できません。標的の選択はSDKに委譲してください")
+endif()
 set(EMSCRIPTEN_ROOT "" CACHE PATH "Emscripten root containing cmake/Modules/Platform/Emscripten.cmake")
 if(NOT EMSCRIPTEN_ROOT)
 	if(DEFINED ENV{EMSCRIPTEN})
@@ -13,3 +16,4 @@ if(NOT IS_ABSOLUTE "${EMSCRIPTEN_ROOT}" OR
 endif()
 list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES EMSCRIPTEN_ROOT)
 include("${EMSCRIPTEN_ROOT}/cmake/Modules/Platform/Emscripten.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/CpuBaseline.cmake")

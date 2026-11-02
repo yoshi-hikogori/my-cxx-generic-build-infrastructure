@@ -363,7 +363,7 @@ stashの欠落したホストファイルや、OS設定に静的runtime等を混
    - [x] 指定されたmasterのschemaから、version 13のフィールド順を確認。
    - [x] 変更前の通常・作業用presetを保存し、比較の基準を用意。
 2. 継承軸を分離する。
-   - [x] [継承軸のpreset](../../cmake/presets/CMakeProjectPresets.json)を明示的にinclude。
+   - [x] 継承軸のpresetを明示的にinclude（当時の案件別ファイルは現在[ルート](../../CMakePresets.json)へ統合済み）。
    - [x] ホスト条件・target/toolchain・generator・compiler・linkerをhidden presetへ移動。
    - [x] single/multi-configの構成設定とbuild/testの構成選択を分離。
    - [x] 機能の切り替えを独立させ、作業用presetにも接続。
@@ -421,7 +421,7 @@ workspace、構築・テスト・配布・デバッグの開発フローは保�
   元案件と実行ファイルだけの独立例が、同じ汎用処理を使用する。
 
 - [x] 事前定義設定に混在する再利用可能な接続と案件の採用値を整理する。
-  [案件別事前定義設定](../../cmake/presets/CMakeProjectPresets.json)には、
+  当時の案件別事前定義設定（現在は[ルート](../../CMakePresets.json)へ統合）には、
   出力レイアウト・CPU要件・機能選択と、案件のキャッシュ変数への接続を残した。
   toolchain参照と操作軸は汎用側へ移し、toolchainのパスは`${sourceDir}/cmake/toolchains/...`とした。
   [ルート事前定義設定](../../CMakePresets.json)の環境別の組み合わせと公開構成は案件側に残すことで合意した。

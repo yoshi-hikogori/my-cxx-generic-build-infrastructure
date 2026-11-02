@@ -22,8 +22,9 @@ import my_import_std;
 
 CMake 4.5.0ではC++20以降のコードで`import std;`を利用できます。Ninja Multi-Config
 生成器に対応していますが、Visual Studio生成器には対応していません。
-このプロジェクトはNinjaまたはNinja Multi-Configを必要とし、Visual Studioのpresetは
-無効にしています。廃止された`CXX_MODULE_STD`設定は使用しません。アプリでは次のように
+現在のpresetはNinjaまたはNinja Multi-Configを使い、Visual Studioのpresetは
+無効にしています。基盤独自のgenerator制限は設けず、機能の対応可否はCMakeに委譲します。
+廃止された`CXX_MODULE_STD`設定は使用しません。アプリでは次のように
 プロジェクトmoduleと標準ライブラリmoduleをimportします。
 
 ```cpp
@@ -52,14 +53,15 @@ target定義はルートに残し、共通設定と配布設定を分離して�
 
 案件・企画に依存せず再利用する汎用ビルド基盤の名前には`GenericBuildInfrastructure`を使います。
 ディレクトリ名は`generic-build-infrastructure`、関数の接頭辞は`cmake_generic_build_infrastructure_`です。
-プロジェクト固有の設定や、開発用の構成を組み合わせる`bundle:development`とは区別します。
+プロジェクト固有の設定とは区別します。
 
-- [汎用ビルド基盤のtarget設定](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureTargets.cmake)：compiler設定、成果物・PDBの出力先、静的MSVCランタイムの適用。
-- [標的環境の処理](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePlatform.cmake)：architecture・CPU水準・実行環境の検証とCPUオプションの適用。
+- [汎用ビルド基盤のtarget設定](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureTargets.cmake)：targetの検証とcompilerの警告・文字コード・適合性設定。
+- [局所CPU設定](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureCPU.cmake)：compiler別CPUオプションへの共通変換と、特定targetだけへの適用。
+- [全体CPU baseline](../cmake/toolchains/CpuBaseline.cmake)：toolchainからCMake標準のフラグ初期化へ接続。
 - [計測処理](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureInstrumentation.cmake)：CMakeの計測登録とClangのtrace設定。
 - [配布への接続](../cmake/generic-build-infrastructure/CxxGenericBuildInfrastructurePackaging.cmake)：ビルド情報・薄い接続ファイルとSHA-256検証targetの登録。
 - [独立した配布entry](../cmake/generic-build-infrastructure/CPackConfig.cmake)：配布実行時のCPack設定。通常configureでは実行しない。
-- [プロジェクトtarget設定](../cmake/MyImportStdTargetSettings.cmake)：案件のCPU・architecture・計測設定を汎用関数へ渡す処理。
+- [プロジェクトtarget設定](../cmake/MyImportStdTargetSettings.cmake)：案件で選んだtargetの警告・局所AVX2・計測設定を汎用関数へ渡す処理。
 - [install/export設定](../cmake/MyImportStdInstall.cmake)：このプロジェクトのinstall対象とexport仕様。
 - [toolchain](../cmake/toolchains/)：native環境のcompiler選択と、SDK付属toolchainへの委譲。
 
@@ -71,32 +73,35 @@ target定義はルートに残し、共通設定と配布設定を分離して�
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/generic-build-infrastructure/CxxGenericBuildInfrastructureTargets.cmake")
 
 cmake_generic_build_infrastructure_apply_compile_settings(TARGET my_app)
-cmake_generic_build_infrastructure_set_pdb_output_directory(
-	TARGET my_app
-	OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/$<CONFIG>/bin"
-)
+set_property(TARGET my_app PROPERTY PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/$<CONFIG>/bin")
 ```
 
-このプロジェクトでは汎用compile設定にCPU・AVX2・計測設定を加える関数を使います。
+このプロジェクトでは汎用compile設定に局所AVX2・計測設定を加える関数を使います。
+ビルド全体のCPU baselineはpresetとtoolchainで設定し、この関数では適用しません。
 成果物とPDBの出力先は、案件の`base:project` presetで`CMAKE_*_OUTPUT_DIRECTORY`として宣言します。
 汎用モジュールは案件の変数を参照せず、他のリポジトリからも直接includeできます。
-出力先と静的ランタイムの関数は後続targetの初期値を設定するため、target作成前に呼び出します。
+出力先とランタイムは独自の設定関数を介さず、標準変数・target propertyを使います。
+`CMAKE_MSVC_RUNTIME_LIBRARY`はtarget作成前の初期値であり、presetで宣言します。
 CPU水準・出力レイアウト・静的ランタイムの採否は案件側で決めます。
 
 ```cmake
 my_import_std_apply_compile_settings(TARGET my_import_std_app)
 ```
 
-出力先・PDB設定関数は、target別の指定などが必要な利用先のために残しています。
-PDB関数には絶対パスの`OUTPUT_DIRECTORY`を指定します。出力先は利用側で決めます。
-WindowsのMSVC形式linker以外ではtargetを変更しません。プロジェクト関数は汎用のcompile設定に、
-architecture・CPU基準・AVX2・instrumentationの設定を加えます。
+個別targetの出力先は`ARCHIVE_OUTPUT_DIRECTORY`・`LIBRARY_OUTPUT_DIRECTORY`・
+`RUNTIME_OUTPUT_DIRECTORY`・`PDB_OUTPUT_DIRECTORY`で指定できます。
+PDBの生成・対応可否はCMakeに任せます。プロジェクト関数は汎用のcompile設定に、
+局所AVX2・instrumentationの設定を加えます。
 キーワード引数にはCMake 4.4の`PARSE_ARGN`を使っています。固定引数の内部関数は4.5の
 `ARGNC`で余分な引数を拒否します。未知引数や欠落値の検証は別途行います。
 余分な引数の検証まで含めてこのヘルパーの契約どおり使うには、CMake 4.5以降が必要です。
-関数内の作業変数はローカルです。出力先とランタイムの初期値は呼び出し元へ返します。
+関数内の作業変数はローカルです。
 install設定の変数と診断設定は`block(SCOPE_FOR VARIABLES DIAGNOSTICS)`で隔離します。
 SDKのinclude処理では変数スコープを作りません。
+
+例外処理の既定フラグはCMakeに任せ、`/EHsc`を重ねません。
+コンパイルの並列実行は`cmake --build --parallel`やbuild presetの`jobs`に任せ、
+単一ソース単位でコンパイルする現在の構成には`/MP`を追加しません。
 
 ### 配布処理の再利用
 
@@ -148,12 +153,14 @@ checksum targetにも同じ値を指定してください。単独の検証ス�
 |---|---|---|
 | `MY_IMPORT_STD_ENABLE_PCH` | ON | アプリのPCHを有効化 |
 | `MY_IMPORT_STD_BUILD_EXAMPLES` | OFF | [module利用例](../examples/module_consumer.cpp)をビルド。テスト有効時は実行も確認 |
-| `MY_IMPORT_STD_ENABLE_AVX2` | OFF | 各プロジェクトtargetにAVX2フラグを適用。x86以外ではエラー |
-| `MY_IMPORT_STD_TARGET_ARCH` | 空 | `x86_64`または`aarch64`を要求し、compilerの実targetを検証 |
-| `MY_IMPORT_STD_CPU_BASELINE` | 空 | `x86-64-v3`または`armv8.2-a`を指定。通常のnative presetはarchitecture別に設定 |
-| `MY_IMPORT_STD_TARGET_ENVIRONMENT` | 空 | `gnu`を指定するとLinux/glibcを要求。Linux presetで設定 |
-| `MY_IMPORT_STD_USE_STATIC_RUNTIME` | OFF | MSVC ABIの静的runtimeを使用 |
+| `MY_IMPORT_STD_ENABLE_AVX2` | OFF | 各プロジェクトtargetにAVX2フラグを適用。対応可否はコンパイラで確認 |
+| `CGBI_CPU_BASELINE` | 空 | ビルド全体のCPU最低水準。`x86-64-v3`または`armv8.2-a`。通常のnative presetで採用 |
+| `CGBI_TARGET_ENVIRONMENT` | 空 | toolchainへのtarget environment指定。Linuxは`gnu`、Windowsは`msvc`に対応。空はtoolchain/compilerの既定値 |
+| `CMAKE_MSVC_RUNTIME_LIBRARY` | CMake既定は`MultiThreaded$<$<CONFIG:Debug>:Debug>DLL` | MSVC ABIのruntimeを選択。`feature:Static_runtime`は末尾の`DLL`なしの値を設定 |
 | `MY_IMPORT_STD_ENABLE_INSTRUMENTATION` | OFF | build・test・installの時間と出力をローカルに保存。Clangではcompiler time traceも取得 |
+
+旧`MY_IMPORT_STD_USE_STATIC_RUNTIME`は廃止しました。直接指定していた場合は
+`CMAKE_MSVC_RUNTIME_LIBRARY`へ移行してください。既存の静的runtime preset名は変わりません。
 
 AVX2を有効にした生成物にはAVX2対応CPUが必要です。実行時のCPU判定やfallbackはありません。
 通常のnative presetではx86_64にx86-64-v3、AArch64にArmv8.2-Aを最低水準として指定します。
@@ -162,11 +169,11 @@ AVX-512は要求しません。Clang/GCCには`-march=x86-64-v3`、clang-clに�
 `/clang:-march=x86-64-v3`を用います。MSVCにはv3名の指定がないため`/arch:AVX2`を用います。
 MSVCの`/arch:AVX2`はx86-64-v3全体を検証するものではありません。対応CPUの条件は
 x86-64-v3として別に定めます。
-Clang/GCCではv3の各命令セットを示すmacroもconfigure時に確認します。
+命令セットの解釈はcompilerに委譲し、各機能のmacroを列挙した独自の照合は行いません。
 Armv8.2-AはClang/GCCの`-march=armv8.2-a`、clang-clの`/clang:-march=armv8.2-a`、
-MSVCの`/arch:armv8.2`で指定します。compilerがフラグに対応しない場合はエラーになります。
-`MY_IMPORT_STD_ENABLE_AVX2=OFF`はCPU水準を下げません。v3指定とAVX2 ONの併用では
-追加のAVX2フラグを重ねません。AArch64とAVX2 ONの組み合わせは拒否します。
+MSVCの`/arch:armv8.2`で指定します。全体設定の対応可否はcompilerの診断に委譲します。
+`MY_IMPORT_STD_ENABLE_AVX2=OFF`は全体のCPU水準を下げません。この案件のAVX2オプションは
+案件が選んだtargetだけへの局所設定であり、全体のbaselineとは独立しています。
 空の値はtoolchain/compilerの既定値を使うための設定であり、未知の値や`*`は受け入れません。
 CMakeが生成する標準ライブラリのBMIにも、利用targetに合わせたcompile設定が引き継がれます。
 examplesはビルド用の利用例であり、配布パッケージには含めません。
@@ -193,7 +200,7 @@ Windows ARM64用presetはARM64用MSVCツール・STL・Windows SDKが必要で�
 VSのARM64用developer環境（例：x64ホストでは`vcvarsall.bat x64_arm64`）から実行してください。
 `architecture`の`strategy: external`は開発環境を選ぶための情報であり、CLIから
 compiler・SDKを自動インストールするものではありません。WindowsのClang targetは
-architectureの指定からtoolchainが明示します。MSVCは選択済みcompilerの実targetを検証します。
+architectureの指定からtoolchainが明示します。MSVCは選択済みの開発環境に標的選択を委譲します。
 クロスビルドしたARM64の実行テストは、ARM64環境または別途設定したemulatorで行ってください。
 
 Windows toolchainは標準変数`CMAKE_SYSTEM_PROCESSOR`を入力とし、案件変数を参照しません。
@@ -202,20 +209,55 @@ Windows toolchainは標準変数`CMAKE_SYSTEM_PROCESSOR`を入力とし、案件
 `CMAKE_SYSTEM_NAME`と`CMAKE_SYSTEM_PROCESSOR`をクロスビルド用に設定します。
 標的を指定しない場合はcompilerの既定値を使います。
 
-案件別の`target_arch:*`軸は、標的選択用の`CMAKE_SYSTEM_PROCESSOR`と、
-実targetの検証条件である`MY_IMPORT_STD_TARGET_ARCH`を一緒に設定します。
-**直接指定する場合の変更点：** `MY_IMPORT_STD_TARGET_ARCH`だけではcompilerの標的を選択しません。
-Windows toolchainで標的を選ぶ場合は`CMAKE_SYSTEM_PROCESSOR`も指定してください。
-既存の事前定義設定の選択方法と動作は変わりません。Linux nativeではarchitectureを選択する
-compiler環境を準備し、案件側の検証で一致を確認します。Linux cross buildを追加したわけではありません。
+`target_arch:*`軸は標準変数`CMAKE_SYSTEM_PROCESSOR`だけを指定します。
+旧`MY_IMPORT_STD_TARGET_ARCH`と汎用APIの`TARGET_ARCH`引数は廃止しました。
+Windows toolchainで標的を選ぶ場合は`CMAKE_SYSTEM_PROCESSOR`を指定してください。
+Linux nativeとMSVCでは適切なcompiler・SDKの開発環境を用意します。
+`CMAKE_SYSTEM_PROCESSOR`と実compilerの標的一致をCMakeが一律に保証するわけではありません。
+標的の選択と必要な照合はtoolchainが担当し、案件のtarget設定では重複して照合しません。
+Linux cross buildを追加したわけではありません。
+旧`MY_IMPORT_STD_TARGET_ENVIRONMENT`は`CGBI_TARGET_ENVIRONMENT`へ移行してください。
+
+`target_environment:GNU(system:Linux)`は、`CGBI_TARGET_ENVIRONMENT=gnu`をLinux toolchainへ渡します。
+Clangではarchitectureとenvironmentから`<arch>-unknown-linux-gnu`を構成し、
+標準変数`CMAKE_CXX_COMPILER_TARGET`でcompilerへ渡します。既存のcompiler targetが
+同じarchitecture・Linux/GNUを示す場合は保持し、競合する場合は拒否します。
+GCCではpresetや利用者が指定した`g++`（triple接頭辞・version付きも可）を使い、
+`-dumpmachine`で報告する標的が要求architecture・Linux/GNUと一致することを確認します。
+GCCを別の標的へ切り替える処理や、別compilerへの暗黙のfallbackは行いません。
+これはcompilerの標的指定の確認であり、sysrootの内容や生成物の実行互換性を保証しません。
+必要なSDK・標準ライブラリ・sysrootは利用者が用意し、sysrootには標準変数`CMAKE_SYSROOT`を使います。
+environmentを指定するLinux構成はx86_64・AArch64のnativeビルドに対応します。
+未指定時はcompilerの既定値を使い、独自の標的指定・問い合わせを追加しません。
+入力は`CMAKE_TRY_COMPILE_PLATFORM_VARIABLES`で試験コンパイルにも引き継ぎます。
+Windowsは既存のMSVC標的選択を維持し、非対応のenvironmentは拒否します。
+Emscripten・WASIでは標的選択をSDKへ委譲し、独自environment指定との併用は拒否します。
 
 Linuxでは`x86_64-@-linux-gnu-clang++-Ninja_Multi_Config-x86_64_v3`または`x86_64-@-linux-gnu-g++-Ninja_Multi_Config-x86_64_v3`を使います。
 対応compiler・標準ライブラリと、module dependency scannerが必要です。
 Linux向けクロスビルドは今回の対象外です。
 Linux AArch64用には`aarch64-@-linux-gnu-clang++-Ninja_Multi_Config-Armv8.2_A`または
 `aarch64-@-linux-gnu-g++-Ninja_Multi_Config-Armv8.2_A`を使います。
-両architectureともGNU/glibcに限定し、実際のcompiler macro・pointer幅と
-`<features.h>`の`__GLIBC__`をconfigure時に検証します。musl環境は対象外です。
+architecture・pointer幅・byte orderの検出はCMakeに任せ、CPU baselineから導いた値との
+独自照合や、追加の64bit・little-endian制限は設けません。
+全体のCPU baselineは汎用軸`cpu_type:*`の`CGBI_CPU_BASELINE`からtoolchainへ渡します。
+toolchainは`CMAKE_USER_MAKE_RULES_OVERRIDE_CXX`でcompiler識別後の初期化処理を登録し、
+共通の変換処理を使って`CMAKE_CXX_FLAGS_INIT`へ追加します。案件のtarget設定は不要です。
+通常のtarget・`add_subdirectory()`の依存先・標準ライブラリBMI・試験コンパイルに適用されます。
+プリビルド済みの依存物を再構築したり、独立した外部ビルドへ設定を自動伝播したりはしません。
+`CMAKE_CXX_FLAGS_INIT`は初回cache初期化用なので、baselineを変更・解除する際は
+`cmake --fresh --preset <name>`を使います。`CMAKE_CXX_FLAGS`を直接指定すると
+CMakeの標準動作でそちらが優先されます。独自の`CMAKE_USER_MAKE_RULES_OVERRIDE_CXX`との
+併用は競合として拒否し、黙って上書きしません。
+旧`MY_IMPORT_STD_CPU_BASELINE`は`CGBI_CPU_BASELINE`へ移行してください。
+特定targetだけの設定が必要な場合に限り、`cmake_generic_build_infrastructure_apply_cpu_settings()`
+へ`CPU_BASELINE`・`ENABLE_AVX2`を明示します。これは全体設定を読み取らず、`PRIVATE`で適用します。
+局所設定では未対応オプションの警告無視も拒否するため、CMake標準の
+`check_cxx_compiler_flag()`で受理を確認します。命令セットの独自検査は行いません。
+`cmake_generic_build_infrastructure_validate_target_platform()`と案件側の検証呼び出しは廃止しました。
+全体のCPU設定・environment指定はtoolchainへ渡します。
+`<features.h>`・`__GLIBC__`の事後検査は行いません。
+既存Linux presetはGNU/glibc向けの標的を選択します。musl用toolchainを追加したわけではありません。
 Linux・Windows ARM64のアプリと`import std`の実ビルドは未検証です。
 
 Emscriptenは`@-@-emscripten-@-Emscripten_sdk-Ninja-Debug`を使います。`EMSCRIPTEN_ROOT`にSDKの絶対パスを指定するか、
@@ -255,19 +297,25 @@ SDK委譲のテストにはfixtureを使い、実SDKでのビルド成功を示�
 
 ### presetの継承軸
 
-[通常のpreset](../CMakePresets.json)はプロジェクト共通設定と公開する構成を定義し、
-[汎用ビルド基盤の軸](../cmake/presets/CMakeGenericBuildInfrastructurePresets.json)と
-[プロジェクト軸](../cmake/presets/CMakeProjectPresets.json)をincludeしています。
-汎用ビルド基盤の軸には案件固有の変数やパスを含めません。
+[通常のpreset](../CMakePresets.json)は案件の採用値と公開する構成への接続を定義し、
+[汎用ビルド基盤のpreset](../cmake/presets/CMakeGenericBuildInfrastructurePresets.json)だけをincludeします。
+旧`CMakeProjectPresets.json`は廃止しました。CPU水準の軸は汎用側に置き、
+ルートで採用します。案件固有の機能軸はルートに置きます。
+汎用側には直交する軸と、その軸を直接継承するhiddenの`aggregation:*`を置きます。
+汎用側は案件の`base:project`や公開presetを参照せず、案件固有の変数やパスを含めません。
 汎用の`system:*`軸は`${sourceDir}/cmake/toolchains/...`で同梱toolchainを参照します。
 再利用先でもtoolchainはソースルートの`cmake/toolchains`に配置してください。
 CMake Tools 1.24.42では、継承した`${fileDir}`が定義元ではなく継承先の事前定義設定の場所を
 基準に展開されるため、この参照には`${fileDir}`を使いません。
 install・検査合計検証・test/install準備targetの操作軸も汎用側に置きます。
-プロジェクト軸に置くのはCPU要件、標的の選択と検証条件への接続、機能選択、短い出力先です。
-環境別の組み合わせと、その案件でどの構成を公開するかは引き続きルート側で決めます。
-ホスト・target/toolchain・generator・compiler・linker・機能・診断・操作をhidden presetに分け、
-公開presetの`inherits`で組み合わせます。preset名は以下の命名規約へ変更しています。
+標的architectureとGNU/glibcの軸も汎用側に置きます。
+環境別の組み合わせは汎用側、CPU水準等の採用と公開する構成の選択はルート側の責務です。
+例えば汎用の`aggregation:x86_64-pc-windows-msvc-clang_cl-lld_link-Ninja_Multi_Config`に、
+ルートでCPU要件と`base:project`を継承接続します。
+build/testは汎用の構成軸、install・checksum・packageは汎用の組み合わせ済みpresetを使います。
+ルートには公開名・表示名と`configurePreset`の接続を残します。
+workflowは継承できないため、具体名を接続する`steps`をルートに置きます。
+既存の公開名・利用者preset・出力先は維持します。preset名は以下の命名規約に従います。
 
 | 軸 | preset名の例 | 設定する内容 |
 |---|---|---|
@@ -286,13 +334,13 @@ install・検査合計検証・test/install準備targetの操作軸も汎用側�
 | test出力 | `test-output:On_failure` | 失敗したテストの出力表示 |
 | 配布形式 | `package-format:ZIP` | CPackの出力形式 |
 
-`bundle:development`は`base:project`と共有の警告・エラー方針を組み合わせる便宜presetです。
+`bundle:development`と`bundle:development-Ninja_Multi_Config`は廃止しました。
+環境のpresetがホスト・標的・generator・compiler・linker・構成一覧・共有診断の各軸を直接継承します。
 色付き診断、configureのdebug/trace、インストール時の表示量、テスト失敗時の出力表示は
 共有構成では選択せず、利用者の設定に分けています。汎用軸にあるdebug/traceやtest出力の
 部品は、利用者が必要に応じて継承できます。`CMAKE_EXPORT_COMPILE_COMMANDS`は
 開発ツール連携のため共有側に残しています。
-`bundle:development-Ninja_Multi_Config`は共通設定・Ninja Multi-Config・構成一覧・既定のDebug構成を
-組み合わせます。generator軸そのものは構成一覧を変更しません。
+generator軸そのものは構成一覧を変更しません。
 `CMAKE_DEFAULT_BUILD_TYPE`はNinja Multi-Config向けの既定構成指定です。
 single-configにはDebug/Release/RelWithDebInfoの`build_type:*(generator:single_config)`を用意しています。
 build/test/packageの構成選択も、それぞれ`build-build_type:*`・`test-build_type:*`・
@@ -312,7 +360,7 @@ Visual Studioの無効化は公開presetの`condition: false`に残していま�
 Debug構成向けで、AVX2・静的runtime・SDKにはそれぞれtargetやtoolchain側の制約があります。
 `feature:ASan(compiler:clang_cl,build_type:Debug)`はDebug用のcompiler/linkerフラグだけを設定します。
 Debugだけを生成する方針は`build_types:Debug`へ分け、
-`bundle:ASan-clang_cl-Debug`をルートの組み合わせ済みpresetとして用意しています。
+汎用の`aggregation:...-Debug-ASan`で必要な軸を直接組み合わせます。
 toolsetの`version=`と空コメントは準備用の値を維持しており、実際のversion指定は別途必要です。
 
 ### 利用者の事前定義設定

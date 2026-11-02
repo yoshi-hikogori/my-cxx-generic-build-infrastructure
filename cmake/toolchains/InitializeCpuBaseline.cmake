@@ -1,0 +1,8 @@
+include("${CMAKE_CURRENT_LIST_DIR}/../generic-build-infrastructure/CxxGenericBuildInfrastructureCPU.cmake")
+block(SCOPE_FOR VARIABLES PROPAGATE CMAKE_CXX_FLAGS_INIT)
+	_cmake_generic_build_infrastructure_cpu_options(cpu_options "${CGBI_CPU_BASELINE}" OFF)
+	if(cpu_options)
+		string(JOIN " " cpu_flags ${cpu_options})
+		string(APPEND CMAKE_CXX_FLAGS_INIT " ${cpu_flags}")
+	endif()
+endblock()
